@@ -31,7 +31,13 @@ action four_byte_utf8_sequence
 
 action replace_insecure_char 
 {
-    data[p] = 0xfffd;
+    // need to find a good way to insert two bytes in the place of the faulty char
+    // this requires in place array resize :D
+    //temp := data[p+1:]
+    //data[p] = 0xff
+    //data[p+1] = 0xfd
+    //data[p+2:] = temp
+    data[p] = 0x3f;
 }
 
 # all the printable ASCII characters (0x20 to 0x7e) excluding those explicitly covered elsewhere:
@@ -60,17 +66,18 @@ char = asciic | utf8c;
 # LF and CR characters
 eol = 0x0a | 0x0d;
 # Space, tab and EOL characters
-ws = 0x20 | 0x09 | eol;
+sp = 0x20 | 0x09;
 
+ws = sp | eol;
 # http://spec.commonmark.org/0.27/#ascii-punctuation-character
 # !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, @, [, \, ], ^, _, `, {, |, }, ~.
 asciipunct = (0x21..0x2f | 0x3a..0x40 | 0x5b..0x60 | 0x7b..0x7e);
 
 utf8sp = (0x20 | 0xa0 | 0x1680 | 0x2000 | 0x2001..0x200a | 0x202f | 0x205f | 0x3000);
 
-line = char* eol;
-
 insecure = 0x0000 %replace_insecure_char;
+
+line = char*  | insecure* eol;
 
 
 #write data nofinal;
