@@ -21,6 +21,7 @@ var someTests = []testPair{
     { "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș", true },
     { " ---\n", true },
     { "  ***\n", true },
+    { "  * * * *\n", true },
     { "   ___\r", true },
     { "   _*-*__\r", true },
     { "# ana-are-mere\n", true },
@@ -33,7 +34,7 @@ var someTests = []testPair{
 
 func TestParse (t *testing.T) {
     for _, curTest := range someTests {
-        oops, _  := parser.Parse([]byte(curTest.text));
+        oops, _  := parser.Parse([]byte(curTest.text))
         t.Logf("Testing '%s'.", curTest.text)
         if oops != curTest.expected {
             t.Errorf("\tParse result invalid, expected '%t'\n", curTest.expected)
