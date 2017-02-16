@@ -73,5 +73,5 @@ line = char* eol;
 insecure = 0x0000 %replace_insecure_char;
 
 
-write data nofinal;
+#write data nofinal;
 }%%
