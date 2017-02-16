@@ -11,22 +11,22 @@ machine character_definitions;
 
 action non_printable_ascii
 {
-    fmt.Printf("np: %s\n", data[p]);
+    //fmt.Printf("np: %s\n", data[p]);
 }
 
 action two_byte_utf8_sequence
 {
-    fmt.Printf("2b %s\n", data[p-2:p]);
+    //fmt.Printf("2b %s\n", data[p-2:p]);
 }
 
 action three_byte_utf8_sequence
 {
-    fmt.Printf("3b %s\n", data[p-3:p]);
+    //fmt.Printf("3b %s\n", data[p-3:p]);
 }
 
 action four_byte_utf8_sequence
 {
-    fmt.Printf("4b %s\n", data[p-4:p]);
+    //fmt.Printf("4b %s\n", data[p-4:p]);
 }
 
 action replace_insecure_char 
@@ -77,8 +77,7 @@ utf8sp = (0x20 | 0xa0 | 0x1680 | 0x2000 | 0x2001..0x200a | 0x202f | 0x205f | 0x3
 
 insecure = 0x0000 %replace_insecure_char;
 
-line = char*  | insecure* eol;
-
+line = char* | insecure* eol;
 
 #write data nofinal;
 }%%

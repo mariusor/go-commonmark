@@ -4,6 +4,7 @@ import (
     "./parser"
     "testing"
     "os"
+    "io"
 )
 
 type testPair struct {
@@ -39,6 +40,17 @@ func TestParse (t *testing.T) {
         if oops != curTest.expected {
             t.Errorf("\tParse result invalid, expected '%t'\n", curTest.expected)
         }
+    }
+}
+
+func TestParseReadme (t *testing.T) {
+    f, _ := os.Open("README.md")
+
+    data := make([]byte, 512)
+    io.ReadFull(f, data)
+
+    if _, err := parser.Parse(data); err != nil {
+        t.Errorf("\tParse invalid\n")
     }
 }
 
