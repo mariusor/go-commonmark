@@ -1,6 +1,6 @@
 // -*-go-*-
 //
-// Markdown link parser
+// Commonmark parser
 // Copyright (c) 2017 Marius Orcisk <marius@habarnam.ro>
 // MIT License
 // 

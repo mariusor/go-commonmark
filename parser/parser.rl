@@ -1,9 +1,10 @@
 // -*-go-*-
 //
-// Markdown link parser
+// Commonmark link parser
 // Copyright (c) 2017 Marius Orcisk <marius@habarnam.ro>
 // MIT License
 // 
+
 package parser
 
 import(
@@ -75,7 +76,7 @@ func parse(data []byte) []byte{
         header = (('#'{1,6}) >emit_header_level_start %emit_header_level_end ) %emit_header_start char*;
         atx_headings = (ws{0,3} header eol) %emit_header_end;
 
-        block = thematic_break | atx_headings ;
+        block = thematic_break* | atx_headings* | line*;
 
         main := block*;
  
