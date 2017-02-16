@@ -70,7 +70,11 @@ func parse(data []byte) []byte{
 
 
         tematic_break_char = ('*' | '-' | '_');
-        thematic_break = (' '{1,3} tematic_break_char{3,} eol) %emit_thematic_break;
+        thematic_break_underscore = (' '{1,3} ('_' | sp){3,} eol) %emit_thematic_break;
+        thematic_break_star = (' '{1,3} ('*' | sp){3,} eol) %emit_thematic_break;
+        thematic_break_minus = (' '{1,3} ('-' | sp){3,} eol) %emit_thematic_break;
+
+        thematic_break = thematic_break_underscore | thematic_break_star | thematic_break_minus;
  
 
         header = (('#'{1,6}) >emit_header_level_start %emit_header_level_end ) %emit_header_start char*;
