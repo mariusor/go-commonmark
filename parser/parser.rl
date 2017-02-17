@@ -17,8 +17,8 @@ func Parse (data []byte) (Document, error) {
 
 %% machine parser;
 %% include character_definitions "characters.rl";
-%% include thematic_breaks "thematic_breaks.rl";
-%% include headers "headers.rl";
+%% include blocks "blocks.rl";
+
 %% write data;
 
 func parse(data []byte) (Document, error) {
@@ -41,9 +41,9 @@ func parse(data []byte) (Document, error) {
         action emit_add_node {
             nodes = append(nodes, node)
         }
-        block = ((thematic_break | headers | line) %emit_add_node)*;
+        document = (block %emit_add_node)*;
 
-        main := block*;
+        main := document;
  
         write init;
         write exec;

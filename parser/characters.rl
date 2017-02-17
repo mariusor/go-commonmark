@@ -91,8 +91,6 @@ char = asciic | utf8c;
 asciipunct = (0x21..0x2f | 0x3a..0x40 | 0x5b..0x60 | 0x7b..0x7e);
 
 line = (char* | insecure* )>mark %emit_new_line eol;
-#line = (char* | insecure* ) eol;
-par = line* eol{2};
 
 #write data nofinal;
 }%%
