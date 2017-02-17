@@ -147,7 +147,7 @@ func TestParse (t *testing.T) {
         if len(testChildren) != len(children) {
             t.Errorf("\tParse result invalid, children length expected %d != %d\n", len(testChildren), len(children))
         }
-        if len(testChildren) > 0 {
+        if len(testChildren) > 0 && len(children) > 0{
             testNode := testChildren[0]
             node := children[0]
             if testNode.Type != node.Type {
