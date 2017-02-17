@@ -1,9 +1,13 @@
 language: go
 
+sudo: required
+
 go:
     - 1.x
     - tip
 
+before_install:
+    - echo "deb http://ftp.debian.org/debian jessie-backports main" | sudo tee /etc/apt/sources.list.d/90-jessie-backports.list
 
 addons:
   apt:
@@ -13,3 +17,7 @@ addons:
 script: 
     - ragel --version
     - make test
+
+matrix:
+  allow_failures:
+      - go: tip
