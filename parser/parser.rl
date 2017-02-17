@@ -8,6 +8,7 @@
 package parser
 
 import(
+//    "fmt"
     "errors"
 )
 
@@ -33,7 +34,7 @@ func parse(data []byte) (Document, error) {
     var node Node
     var header_level uint;
     var nodes []Node;
-    // fmt.Printf("Incoming str: %s - len %d\n", data, len(data))
+    //fmt.Printf("Incoming str: %#v - len %d\n", data, len(data))
 
     var mark int
 

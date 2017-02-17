@@ -65,7 +65,7 @@ func (n *Node) Equal(tn Node) bool {
     return true
 }
 
-func (d *Document)Equal(td Document) bool {
+func (d *Document) Equal(td Document) bool {
     if len(d.Children) != len(td.Children) {
         return false
     }
@@ -118,11 +118,11 @@ const (
 func (nt *NodeType) String() string {
     switch *nt {
     case Doc:
-        return "document"
+        return "doc"
     case Par:
-        return "paragraph"
+        return "par"
     case TBreak:
-        return "thematic break"
+        return "tbr"
     case H1:
        return "h1"
     case H2:
@@ -136,7 +136,7 @@ func (nt *NodeType) String() string {
     case H6:
        return "h6"
    default:
-       return "[null]"
+       return "nil"
     }
 }
 
