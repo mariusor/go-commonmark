@@ -1,2 +1,2 @@
-parser/*.go
+parser/rgl_*.go
 .idea/
