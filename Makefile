@@ -7,7 +7,7 @@ _ragel:
 	ragel -Z -G2 -o parser/rgl_parser.go parser/parser.rl
 
 test: _ragel
-	go test -v
+	go test -v ./...
 	
 dot:
 	ragel -V -p -o parser.dot parser/parser.rl

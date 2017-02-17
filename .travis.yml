@@ -1,0 +1,14 @@
+language: go
+
+go:
+    - 1.x
+    - tip
+
+
+addons:
+  apt:
+    packages:
+    - ragel
+
+script: 
+    - make test
