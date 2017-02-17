@@ -38,9 +38,6 @@ func parse(data []byte) (Document, error) {
     var mark int
 
     %%{
-        action mark {
-            mark = p
-        }
         action emit_add_node {
             nodes = append(nodes, node)
         }

@@ -14,33 +14,51 @@ type testPair struct {
     doc         parser.Document
 }
 
+var emptyDoc parser.Document = parser.Document{}
 
 var someTests = []testPair{
 //    {
-//        "[ana](httpslittrme)", 
-//        true, 
-//        parser.Document{
-//            Children: []parser.Node{
-//                parser.Node{
-//                    Type: parser.Par,
-//                    Content: []byte("[ana](httpslittrme)"),
-//                },
-//            },
-//        },
+//        {0x00},
+//        false,
+//        emptyDoc,
 //    },
-//    { "[ana](https://littr.me)", true, nil },
-//    { "", false, nil },
+    {
+        "[ana](httpslittrme)",
+        true,
+        emptyDoc,
+    },
+    {
+        "[ana](https://littr.me)",
+        true,
+        emptyDoc,
+    },
+    {
+        "",
+        false,
+        emptyDoc,
+    },
 //    { "some text before [test 123](https://littr.me)", true },
 //    { "[test 123](https://littr.me) some text after", true },
 //    { "some text before [test 123](https://littr.me) some text after", true },
-//    { "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș", true },
+    {
+        "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș\n", 
+        true ,
+        parser.Document{
+            Children: []parser.Node{
+                parser.Node{
+                    Type: parser.Par,
+                    Content: []byte("𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș"),
+                },
+            },
+        },
+    },
 //    { " ---\n", true },
 //    { "  ***\n", true },
 //    { "  * * * *\n", true },
 //    { "   ___\r", true },
 //    { "   _*-*__\r", true },
-    { 
-        "# ana-are-mere\n", 
+    {
+        "# ana are mere\n", 
         true,
         parser.Document{
             Children: []parser.Node{
@@ -52,7 +70,7 @@ var someTests = []testPair{
         },
     },
     {
-        "## ana-are-mere\n", 
+        "## ana are mere\n", 
         true,
         parser.Document{
             Children: []parser.Node{
@@ -65,7 +83,7 @@ var someTests = []testPair{
     },
 
     {
-        "### ana-are-mere\n",
+        "### ana are mere\n",
         true,
         parser.Document{
             Children: []parser.Node{
@@ -77,7 +95,7 @@ var someTests = []testPair{
         },
     },
     {
-        "#### ana-are-mere\n",
+        "#### ana are mere\n",
         true,
         parser.Document{
             Children: []parser.Node{
@@ -95,7 +113,7 @@ var someTests = []testPair{
             Children: []parser.Node{
                 parser.Node{
                     Type: parser.H5,
-                    Content: []byte("ana are mere"),
+                    Content: []byte("ana-are-mere"),
                 },
             },
         },
@@ -107,7 +125,7 @@ var someTests = []testPair{
             Children: []parser.Node{
                 parser.Node{
                     Type: parser.H6,
-                    Content: []byte("ana are mere"),
+                    Content: []byte("ana-are-mere"),
                 },
             },
         },
@@ -118,24 +136,29 @@ func TestParse (t *testing.T) {
     for _, curTest := range someTests {
         doc, err  := parser.Parse([]byte(curTest.text))
         t.Logf("Testing '%s'.", curTest.text)
-        if err != nil {
-            t.Errorf("\tParse result invalid, expected '%t'\n", curTest.expected)
+        if err != nil && curTest.expected {
+            t.Errorf("\tParse result invalid, expected '%t, got %v'\n", curTest.expected)
         }
         if curTest.doc.Equal(doc) {
             t.Logf("\t%s\n", doc.Children)
         }
-        if len(curTest.doc.Children) != len(doc.Children) {
-            t.Errorf("\tParse result invalid, children length expected %d != %d\n", len(curTest.doc.Children), len(doc.Children))
+        testChildren := curTest.doc.Children
+        children := doc.Children
+        if len(testChildren) != len(children) {
+            t.Errorf("\tParse result invalid, children length expected %d != %d\n", len(testChildren), len(children))
         }
-        testNode := curTest.doc.Children[0]
-        node := doc.Children[0]
-        if testNode.Type != node.Type {
-            t.Errorf("\tParse result invalid, node type expected %v != %v\n", testNode.Type, node.Type)
+        if len(testChildren) > 0 {
+            testNode := testChildren[0]
+            node := children[0]
+            if testNode.Type != node.Type {
+                t.Errorf("\tParse result invalid, node type expected %v != %v\n", testNode.Type, node.Type)
+            }
+            if !bytes.Equal(testNode.Content, node.Content) {
+                t.Errorf("\tParse result invalid, node content expected %s != %s\n", testNode.Content, node.Content)
+                t.Errorf("\tParse result invalid, node content expected %v != %v\n", testNode.Content, node.Content)
+            }
+            //t.Logf("\t%s\n", testNode.Content)
         }
-        if bytes.Equal(testNode.Content, node.Content) {
-            t.Errorf("\tParse result invalid, node content expected %s != %s\n", testNode.Content, node.Content)
-        }
-        t.Logf("\t%s\n", testNode.Content)
     }
 }
 

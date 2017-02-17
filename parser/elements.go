@@ -56,7 +56,8 @@ func (d *Document)Equal(td Document) bool {
 type NodeType uint8
 
 const (
-    H1 NodeType = iota
+    None NodeType = iota 
+    H1
     H2
     H3
     H4

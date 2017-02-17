@@ -34,15 +34,22 @@ action replace_insecure_char
     // need to find a good way to insert two bytes in the place of the faulty char
     // this requires in place array resize :D
     //temp := data[p+1:]
-    //data[p] = 0xff
-    //data[p+1] = 0xfd
+    data[p-1] = 0xff
+    data[p] = 0xfd
     //data[p+2:] = temp
-    data[p] = 0x3f;
+    //data[p] = 0x3f;
+    //data[p] = byte('?');
+}
+
+action mark {
+    mark = p
 }
 
 action emit_new_line {
     node = NewParagraph(data[mark:p]) 
 }
+
+insecure = 0x00 0x00 %replace_insecure_char;
 
 # all the printable ASCII characters (0x20 to 0x7e) excluding those explicitly covered elsewhere:
 # skip space (0x20), quote (0x22), ampersand (0x26), less than (0x3c), greater than (0x3e),
@@ -65,24 +72,26 @@ utf8c = (0x01..0x1f | 0x7f)                             %non_printable_ascii    
         (0xe0..0xef 0x80..0xbf 0x80..0xbf)              %three_byte_utf8_sequence   |
         (0xf0..0xf4 0x80..0xbf 0x80..0xbf 0x80..0xbf)   %four_byte_utf8_sequence;
 
-char = asciic | utf8c;
-
 # LF and CR characters
 eol = 0x0a | 0x0d;
-# Space, tab and EOL characters
+
+# Space and tab characters
 sp = 0x20 | 0x09;
 
+# UTF-8 white space characters
+utf8sp = (0x20 | 0xa0) | 
+         (0x16 0x80 | (0x20 (0x00 | 0x01 | 0x0a | 0x2f | 0x5f) | (0x30 0x00))) %two_byte_utf8_sequence;
+
 ws = sp | eol;
+
+char = asciic | utf8c;
+
 # http://spec.commonmark.org/0.27/#ascii-punctuation-character
 # !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, @, [, \, ], ^, _, `, {, |, }, ~.
 asciipunct = (0x21..0x2f | 0x3a..0x40 | 0x5b..0x60 | 0x7b..0x7e);
 
-utf8sp = (0x20 | 0xa0 | 0x1680 | 0x2000 | 0x2001..0x200a | 0x202f | 0x205f | 0x3000);
-
-insecure = 0x0000 %replace_insecure_char;
-
-#line = (char* | insecure* )>mark %emit_new_line eol;
-line = (char* | insecure* ) eol;
+line = (char* | insecure* )>mark %emit_new_line eol;
+#line = (char* | insecure* ) eol;
 par = line* eol{2};
 
 #write data nofinal;
