@@ -31,7 +31,7 @@ action emit_header_end
 }
 
 header = ('#'{1,6} @emit_header_level %emit_header_level_end) (sp+)%mark (char | ws)*;
-headers = (ws{0,3} header) %emit_header_end eol;
+atx_heading = (ws{0,3} header) %emit_header_end eol;
 
 #write data nofinal;
 }%%
