@@ -47,11 +47,33 @@ func NewHeader(level uint, content []byte) Node {
     return el
 }
 
-func (n *Node)Equal(tn Node) bool {
+func (n *Node) Equal(tn Node) bool {
+    if n.Type != tn.Type {
+        return false
+    }
+    if !bytes.Equal(n.Content, tn.Content) {
+        return false
+    }
+    if len(n.Children) != len(tn.Children) {
+        return false
+    }
+    for i, c := range(n.Children) {
+        if !c.Equal(tn.Children[i]) {
+            return false
+        }
+    }
     return true
 }
 
 func (d *Document)Equal(td Document) bool {
+    if len(d.Children) != len(td.Children) {
+        return false
+    }
+    for i, c := range(d.Children) {
+        if !c.Equal(td.Children[i]) {
+            return false
+        }
+    }
     return true
 }
 
@@ -65,13 +87,18 @@ func (d *Document) String() string {
 
 func (n *Node) String() string {
     var buffer bytes.Buffer
-    buffer.WriteString(fmt.Sprintf("[%s] %s\n", n.Type.String(), string(n.Content)))
+    buffer.WriteString(fmt.Sprintf("[%s] %s", n.Type.String(), string(n.Content)))
+    if len(n.Children) > 0  {
+        buffer.WriteString("\n[")
+    }
     for _, c := range(n.Children) {
-        buffer.WriteString(c.String())
+        buffer.WriteString(fmt.Sprintf("\t%s",c.String()))
+    }
+    if len(n.Children) > 0  {
+        buffer.WriteString("]")
     }
     return buffer.String()
 }
-
 
 type NodeType uint8
 
@@ -109,7 +136,7 @@ func (nt *NodeType) String() string {
     case H6:
        return "h6"
    default:
-       return "none"
+       return "[null]"
     }
 }
 
