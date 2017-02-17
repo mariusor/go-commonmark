@@ -40,6 +40,10 @@ action replace_insecure_char
     data[p] = 0x3f;
 }
 
+action emit_new_line {
+    node = NewParagraph(data[mark:p]) 
+}
+
 # all the printable ASCII characters (0x20 to 0x7e) excluding those explicitly covered elsewhere:
 # skip space (0x20), quote (0x22), ampersand (0x26), less than (0x3c), greater than (0x3e),
 # left bracket 0x5b, right bracket 0x5d, backtick (0x60), and vertical bar (0x7c)
@@ -77,7 +81,9 @@ utf8sp = (0x20 | 0xa0 | 0x1680 | 0x2000 | 0x2001..0x200a | 0x202f | 0x205f | 0x3
 
 insecure = 0x0000 %replace_insecure_char;
 
-line = char* | insecure* eol;
+#line = (char* | insecure* )>mark %emit_new_line eol;
+line = (char* | insecure* ) eol;
+par = line* eol{2};
 
 #write data nofinal;
 }%%

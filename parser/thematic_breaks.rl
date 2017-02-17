@@ -12,9 +12,8 @@ machine thematic_breaks;
 
 action emit_thematic_break 
 {
-    fmt.Printf("thematic break\n");
+    node = NewThematicBreak('-')
 }
-
 
 thematic_break_underscore = (' '{1,3} ('_' | sp){3,} eol) %emit_thematic_break;
 thematic_break_star = (' '{1,3} ('*' | sp){3,} eol) %emit_thematic_break;
