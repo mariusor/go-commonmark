@@ -49,7 +49,7 @@ action emit_new_line {
     node = NewParagraph(data[mark:p]) 
 }
 
-insecure = 0x00 0x00 %replace_insecure_char;
+insecure = (0x00 0x00) %replace_insecure_char;
 
 # all the printable ASCII characters (0x20 to 0x7e) excluding those explicitly covered elsewhere:
 # skip space (0x20), quote (0x22), ampersand (0x26), less than (0x3c), greater than (0x3e),
@@ -90,7 +90,7 @@ char = asciic | utf8c;
 # !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, @, [, \, ], ^, _, `, {, |, }, ~.
 asciipunct = (0x21..0x2f | 0x3a..0x40 | 0x5b..0x60 | 0x7b..0x7e);
 
-line = (char* | insecure* )>mark %emit_new_line eol;
+line = (char)* >mark %emit_new_line eol;
 
 #write data nofinal;
 }%%
