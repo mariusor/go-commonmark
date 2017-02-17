@@ -8,18 +8,11 @@
 package parser
 
 import(
-    "fmt"
     "errors"
 )
 
-func Parse (data []byte) (bool, error) {
-
-    links := parse(data)
-
-    if links == nil {
-        return false, errors.New(":")
-    }
-    return true, nil
+func Parse (data []byte) (Document, error) {
+    return parse(data)
 }
 
 %% machine parser;
@@ -28,23 +21,30 @@ func Parse (data []byte) (bool, error) {
 %% include headers "headers.rl";
 %% write data;
 
-func parse(data []byte) []byte{
+func parse(data []byte) (Document, error) {
     cs, p, pe := 0, 0, len(data)
     eof := len(data)
 
+    var doc Document
     if pe == 0 {
-        return nil
+        return doc, errors.New("Empty document")
     }
 
+    var node Node
+    var header_level uint;
+    var nodes []Node;
     // fmt.Printf("Incoming str: %s - len %d\n", data, len(data))
 
-    var header_level int
     var mark int
-    var header_cont []byte
 
     %%{
-
-        block = thematic_break* | atx_headings* | line*;
+        action mark {
+            mark = p
+        }
+        action emit_add_node {
+            nodes = append(nodes, node)
+        }
+        block = ((thematic_break | headers | line) %emit_add_node)*;
 
         main := block*;
  
@@ -52,5 +52,11 @@ func parse(data []byte) []byte{
         write exec;
     }%%
 
-    return data 
+    //fmt.Printf("last node: %v\n", node)
+    //fmt.Printf("last mark: %v\n", mark)
+    //fmt.Printf("last level: %v\n", header_level)
+
+    doc.Children = nodes
+
+    return doc, nil
 }
