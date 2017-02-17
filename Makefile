@@ -4,7 +4,7 @@ $RUN=go run
 $RAGEL=ragel
 
 _ragel:
-	ragel -Z -T1 -o parser/rgl_parser.go parser/parser.rl
+	ragel -Z -G2 -o parser/rgl_parser.go parser/parser.rl
 
 test: _ragel
 	go test -v ./...
