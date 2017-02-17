@@ -1,7 +1,8 @@
 package parser
 
 import (
-//    "fmt"
+    "fmt"
+    "bytes"
 )
 
 func NewParagraph(cont []byte) Node {
@@ -49,14 +50,34 @@ func NewHeader(level uint, content []byte) Node {
 func (n *Node)Equal(tn Node) bool {
     return true
 }
+
 func (d *Document)Equal(td Document) bool {
     return true
 }
+
+func (d *Document) String() string {
+    var buffer bytes.Buffer
+    for _, c := range(d.Children) {
+        buffer.WriteString(c.String())
+    }
+    return buffer.String()
+}
+
+func (n *Node) String() string {
+    var buffer bytes.Buffer
+    buffer.WriteString(fmt.Sprintf("[%s] %s\n", n.Type.String(), string(n.Content)))
+    for _, c := range(n.Children) {
+        buffer.WriteString(c.String())
+    }
+    return buffer.String()
+}
+
 
 type NodeType uint8
 
 const (
     None NodeType = iota 
+    Doc
     H1
     H2
     H3
@@ -67,6 +88,31 @@ const (
     TBreak
 )
 
+func (nt *NodeType) String() string {
+    switch *nt {
+    case Doc:
+        return "document"
+    case Par:
+        return "paragraph"
+    case TBreak:
+        return "thematic break"
+    case H1:
+       return "h1"
+    case H2:
+       return "h2"
+    case H3:
+       return "h3"
+    case H4:
+       return "h4"
+    case H5:
+       return "h5"
+    case H6:
+       return "h6"
+   default:
+       return "none"
+    }
+}
+
 type Document struct {
     Children []Node
 }
@@ -74,6 +120,6 @@ type Document struct {
 type Node struct {
    Type NodeType
    Content []byte
-   //Children []Node
+   Children []Node
    //Attributes map[string]string
 }
