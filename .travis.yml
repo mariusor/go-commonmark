@@ -11,4 +11,5 @@ addons:
     - ragel
 
 script: 
+    - ragel --version
     - make test
