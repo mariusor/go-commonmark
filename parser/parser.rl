@@ -8,7 +8,7 @@
 package parser
 
 import(
-//    "fmt"
+    "fmt"
     "errors"
 )
 
@@ -26,7 +26,7 @@ func parse(data []byte) (Document, error) {
     cs, p, pe := 0, 0, len(data)
     eof := len(data)
 
-    var doc Document
+    var doc Document = Document{Children: []Node{Node{}}}
     if pe == 0 {
         return doc, errors.New("Empty document")
     }
@@ -39,12 +39,22 @@ func parse(data []byte) (Document, error) {
     var mark int
 
     %%{
-        action emit_add_node {
-            nodes = append(nodes, node)
+        action emit_eof {
+            if !node.Empty() {
+                nodes = append(nodes, node)
+            }
+            doc.Children = nodes
         }
-        document = (block %emit_add_node)*;
 
-        main := document;
+        action emit_add_block {
+            if !node.Empty() {
+                nodes = append(nodes, node)
+            }
+            node = Node{}
+        }
+
+        document = (block %emit_add_block)*;
+        main := document %eof emit_eof;
  
         write init;
         write exec;
@@ -54,7 +64,7 @@ func parse(data []byte) (Document, error) {
     //fmt.Printf("last mark: %v\n", mark)
     //fmt.Printf("last level: %v\n", header_level)
 
-    doc.Children = nodes
+    fmt.Printf("")
 
     return doc, nil
 }
