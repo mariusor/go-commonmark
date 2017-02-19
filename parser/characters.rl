@@ -46,14 +46,24 @@ action emit_new_line {
     node = NewParagraph(data[mark:p]) 
 }
 
-insecure = (0x00 0x00) %replace_insecure_char;
+action two_byte_utf8_space {
+//    fmt.Printf("2bsp %s\n", data[p-2:p]);
+}
+action three_byte_utf8_space {
+//    fmt.Printf("3bsp %s\n", data[p-3:p]);
+}
 
-# all the printable ASCII characters (0x20 to 0x7e) excluding those explicitly covered elsewhere:
-# skip space (0x20), quote (0x22), ampersand (0x26), less than (0x3c), greater than (0x3e),
-# left bracket 0x5b, right bracket 0x5d, backtick (0x60), and vertical bar (0x7c)
-asciic = (0x21 | 0x23..0x25 | 0x27..0x3b | 0x3d | 0x3f..0x5a | 0x5c | 0x5e..0x5f | 0x61..0x7b | 0x7e);
+insecure = 0x00 %replace_insecure_char;
 
-# here is where we handle the UTF-8 and everything else
+# http://spec.commonmark.org/0.27/#ascii-punctuation-character
+# ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
+asciipunct = (0x21..0x2f | 0x3a..0x40 | 0x5b..0x60 | 0x7b..0x7e);
+
+# all the printable ASCII characters (0x20 to 0x7e) excluding those explicitly covered elsewhere
+asciic = (0x21..0x7e) -- asciipunct;
+
+# @see: https://git.wincent.com/wikitext.git/blob/4bb2e23eebaf25c6f1dddb721f074f69375d222a:/ext/wikitext/wikitext_ragel.rl
+# here is where we handle the UTF-8 and everything else 
 #
 #     one_byte_sequence   = byte begins with zero;
 #     two_byte_sequence   = first byte begins with 110 (0xc0..0xdf), next with 10 (0x80..9xbf);
