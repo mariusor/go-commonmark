@@ -23,7 +23,7 @@ func NewThematicBreak(t byte) Node {
 	return el
 }
 
-func NewHeader(level uint, content []byte) Node {
+func NewHeading(level uint, content []byte) Node {
 	var el Node
 	var t NodeType
 
@@ -48,7 +48,7 @@ func NewHeader(level uint, content []byte) Node {
 }
 
 func (n *Node) Empty() bool {
-	return n.Type != None
+	return n.Type == None
 }
 
 func (n *Node) Equal(tn Node) bool {

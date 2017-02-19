@@ -227,18 +227,18 @@ var someTests = []testPair{
 	//		},
 	//	},
 	{
-		"# ana are mere\n",
+		" # ana are mere\n",
 		true,
 		newDoc([]parser.Node{newNode(parser.H1, "ana are mere")}),
 	},
 	{
-		"## ana are mere\n",
+		"##ana are mere\n",
 		true,
 		newDoc([]parser.Node{newNode(parser.H2, "ana are mere")}),
 	},
 
 	{
-		"### ana are mere\n",
+		"  ### ana are mere\n",
 		true,
 		newDoc([]parser.Node{newNode(parser.H3, "ana are mere")}),
 	},
@@ -248,12 +248,12 @@ var someTests = []testPair{
 		newDoc([]parser.Node{newNode(parser.H4, "ana are mere")}),
 	},
 	{
-		"#####  ana-are-mere\n",
+		"   #####  ana-are-mere\n",
 		true,
 		newDoc([]parser.Node{newNode(parser.H5, "ana-are-mere")}),
 	},
 	{
-		" ###### ana-are-mere\n",
+		" ######ana-are-mere\n",
 		true,
 		newDoc([]parser.Node{newNode(parser.H6, "ana-are-mere")}),
 	},

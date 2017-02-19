@@ -13,9 +13,9 @@ action emit_paragraph {
 }
 
 include thematic_breaks "thematic_breaks.rl";
-include headers "headings.rl";
+include headings "headings.rl";
 
-paragraph = (line)* eol ;
+paragraph = line* eol;
 
 leaf_block = thematic_break | atx_heading;
 

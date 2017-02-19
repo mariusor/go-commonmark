@@ -8,32 +8,33 @@
 
 %%{
 
-machine headers;
+machine headings;
 
 
-action emit_header_start
+action emit_heading_start
 {
 }
 
-action emit_header_level
+action emit_heading_level
 {
-    header_level++;
+    heading_level++;
 }
 
-action emit_header_level_end
+action emit_heading_level_end
 {
     mark = p
 }
 
-action emit_header_end
+action emit_heading_end
 {
-    node = NewHeader(header_level, data[mark:p])
+    node = NewHeading(heading_level, data[mark:p])
 }
 
-headerchar = (char | sp | asciipunct);
+heading_level = ('#'{1,6} @emit_heading_level %emit_heading_level_end);
+heading_char = (line_char | asciipunct);
 
-header = ('#'{1,6} @emit_header_level %emit_header_level_end) sp+ (headerchar* >mark);
-atx_heading = (ws{0,3} header) %emit_header_end eol;
+heading = heading_level sp* (heading_char+ >mark);
+atx_heading = (ws{0,3} heading) eol >emit_heading_end eol?;
 
 #write data nofinal;
 }%%

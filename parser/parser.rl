@@ -32,7 +32,7 @@ func parse(data []byte) (Document, error) {
     }
 
     var node Node
-    var header_level uint;
+    var heading_level uint;
     var nodes []Node;
     //fmt.Printf("Incoming str: %#v - len %d\n", data, len(data))
 
@@ -40,8 +40,8 @@ func parse(data []byte) (Document, error) {
 
     %%{
         action emit_eof {
-            if !node.Empty() {
-                nodes = append(nodes, node)
+            if node.Empty() {
+                nodes = append(nodes, NewParagraph(data[mark:p]))
             }
             doc.Children = nodes
         }
@@ -50,7 +50,6 @@ func parse(data []byte) (Document, error) {
             if !node.Empty() {
                 nodes = append(nodes, node)
             }
-            node = Node{}
         }
 
         document = (block %emit_add_block)*;

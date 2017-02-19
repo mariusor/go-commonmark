@@ -39,10 +39,12 @@ action replace_insecure_char
 }
 
 action mark {
+    //fmt.Printf("cur: %d\n", p)
     mark = p
 }
 
 action emit_new_line {
+    fmt.Printf("nl: %d\n", p)
     node = NewParagraph(data[mark:p]) 
 }
 
@@ -80,7 +82,7 @@ utf8c = (0x01..0x1f | 0x7f)                             %non_printable_ascii    
         (0xf0..0xf4 0x80..0xbf 0x80..0xbf 0x80..0xbf)   %four_byte_utf8_sequence;
 
 # LF and CR characters
-eol = (0x0d? 0x0a) | 0x0d;
+eol = (0x0a | 0x0d);
 
 # UTF-8 white space characters
 utf8sp = (0xc2 0xa0)                              %two_byte_utf8_space       | # no-break-space 
@@ -96,8 +98,9 @@ ws = sp | eol;
 
 char = asciic | utf8c;
 
-line = (sp | char | insecure)* >mark eol >emit_new_line ;
-#line = (char | insecure)* >mark eol >emit_new_line ;
+line_char = (sp | char | insecure);
+line = line_char* >mark eol;
+#line = line_char* >mark eol %emit_new_line;
 
 #write data nofinal;
 }%%
