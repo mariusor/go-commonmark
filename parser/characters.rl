@@ -31,11 +31,11 @@ action four_byte_utf8_sequence
 
 action replace_insecure_char 
 {
-    // need to find a good way to insert two bytes in the place of the faulty char
+    // need to find a good way to insert two bytes in the place of the null char
     // this requires in place array resize :D
     //data[p-1] = 0xff
     //data[p] = 0xfd
-    data[p] = byte('?');
+    data[p] = 0x3f;
 }
 
 action mark {
@@ -96,8 +96,8 @@ ws = sp | eol;
 
 char = asciic | utf8c;
 
-#line = (char asciipunct)* >mark %emit_new_line eol;
-line = (char)* >mark %emit_new_line eol;
+line = (sp | char | insecure)* >mark eol >emit_new_line ;
+#line = (char | insecure)* >mark eol >emit_new_line ;
 
 #write data nofinal;
 }%%
