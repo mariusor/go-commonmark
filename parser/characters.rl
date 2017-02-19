@@ -33,12 +33,9 @@ action replace_insecure_char
 {
     // need to find a good way to insert two bytes in the place of the faulty char
     // this requires in place array resize :D
-    //temp := data[p+1:]
-    data[p-1] = 0xff
-    data[p] = 0xfd
-    //data[p+2:] = temp
-    //data[p] = 0x3f;
-    //data[p] = byte('?');
+    //data[p-1] = 0xff
+    //data[p] = 0xfd
+    data[p] = byte('?');
 }
 
 action mark {
@@ -73,23 +70,23 @@ utf8c = (0x01..0x1f | 0x7f)                             %non_printable_ascii    
         (0xf0..0xf4 0x80..0xbf 0x80..0xbf 0x80..0xbf)   %four_byte_utf8_sequence;
 
 # LF and CR characters
-eol = 0x0a | 0x0d;
-
-# Space and tab characters
-sp = 0x20 | 0x09;
+eol = (0x0d? 0x0a) | 0x0d;
 
 # UTF-8 white space characters
-utf8sp = (0x20 | 0xa0) | 
-         (0x16 0x80 | (0x20 (0x00 | 0x01 | 0x0a | 0x2f | 0x5f) | (0x30 0x00))) %two_byte_utf8_sequence;
+utf8sp = (0xc2 0xa0)                              %two_byte_utf8_space       | # no-break-space 
+         ( 0xe1 0x9a 0x80                                                    | # ogham space
+           0xe2 0x80 (0x80..0x8a | 0xaf | 0x9f)                              | # en and em quad, en and em space, three, four and six per em space, figure space, punctuation space
+                                                                               #    thin space, hair space, narrow no-break space, medium mathematical space
+           0xe3 0x80 0x80)                        %three_byte_utf8_space;      # ideographic space
+
+# Space and tab characters
+sp = 0x20 | 0x09 | utf8sp;
 
 ws = sp | eol;
 
 char = asciic | utf8c;
 
-# http://spec.commonmark.org/0.27/#ascii-punctuation-character
-# !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, @, [, \, ], ^, _, `, {, |, }, ~.
-asciipunct = (0x21..0x2f | 0x3a..0x40 | 0x5b..0x60 | 0x7b..0x7e);
-
+#line = (char asciipunct)* >mark %emit_new_line eol;
 line = (char)* >mark %emit_new_line eol;
 
 #write data nofinal;
