@@ -30,7 +30,9 @@ action emit_header_end
     node = NewHeader(header_level, data[mark:p])
 }
 
-header = ('#'{1,6} @emit_header_level %emit_header_level_end) (sp+)%mark (char | ws)*;
+headerchar = (char | sp | asciipunct);
+
+header = ('#'{1,6} @emit_header_level %emit_header_level_end) sp+ (headerchar* >mark);
 atx_heading = (ws{0,3} header) %emit_header_end eol;
 
 #write data nofinal;
