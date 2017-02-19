@@ -47,6 +47,10 @@ func NewHeader(level uint, content []byte) Node {
 	return el
 }
 
+func (n *Node) Empty() bool {
+	return n.Type != None
+}
+
 func (n *Node) Equal(tn Node) bool {
 	if n.Type != tn.Type {
 		return false
@@ -87,7 +91,11 @@ func (d *Document) String() string {
 
 func (n *Node) String() string {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("[%s] %s", n.Type.String(), string(n.Content)))
+	if len(n.Content) > 0 {
+		buffer.WriteString(fmt.Sprintf("[%s] %s", n.Type.String(), string(n.Content)))
+	} else {
+		buffer.WriteString(fmt.Sprintf("[%s]", n.Type.String()))
+	}
 	if len(n.Children) > 0 {
 		buffer.WriteString("\n[")
 	}
