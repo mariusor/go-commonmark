@@ -226,80 +226,60 @@ var someTests = []testPair{
 	//			},
 	//		},
 	//	},
-	//	{
-	//		"# ana are mere\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.H1,
-	//					Content: []byte("ana are mere"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"## ana are mere\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.H2,
-	//					Content: []byte("ana are mere"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//
-	//	{
-	//		"### ana are mere\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.H3,
-	//					Content: []byte("ana are mere"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"#### ana are mere\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.H4,
-	//					Content: []byte("ana are mere"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"#####  ana-are-mere\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.H5,
-	//					Content: []byte("ana-are-mere"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		" ###### ana-are-mere\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.H6,
-	//					Content: []byte("ana-are-mere"),
-	//				},
-	//			},
-	//		},
-	//	},
+	{
+		"# ana are mere\n",
+		true,
+		newDoc([]parser.Node{newNode(parser.H1, "ana are mere")}),
+	},
+	{
+		"## ana are mere\n",
+		true,
+		newDoc([]parser.Node{newNode(parser.H2, "ana are mere")}),
+	},
+
+	{
+		"### ana are mere\n",
+		true,
+		newDoc([]parser.Node{newNode(parser.H3, "ana are mere")}),
+	},
+	{
+		"#### ana are mere\n",
+		true,
+		newDoc([]parser.Node{newNode(parser.H4, "ana are mere")}),
+	},
+	{
+		"#####  ana-are-mere\n",
+		true,
+		newDoc([]parser.Node{newNode(parser.H5, "ana-are-mere")}),
+	},
+	{
+		" ###### ana-are-mere\n",
+		true,
+		newDoc([]parser.Node{newNode(parser.H6, "ana-are-mere")}),
+	},
 }
+
+var readmeTest = func() testPair {
+	f, _ := os.Open("README.md")
+
+	data := make([]byte, 512)
+	io.ReadFull(f, data)
+	data = bytes.Trim(data, "\x00")
+
+	title := newNode(parser.H1, "Ragel playground")
+	hr := newNode(parser.TBreak, "-")
+	p1 := newNode(parser.Par, "A small go repository to learn some ragel usage by implementing a Common Mark parser.")
+	p2 := newNode(parser.Par, "Using the [0.27](http://spec.commonmark.org/0.27/) version of the specification.")
+	p3 := newNode(parser.Par, "[![Build Status](https://travis-ci.org/mariusor/ragel-playgrnd.svg?branch=master)](https://travis-ci.org/mariusor/ragel-playgrnd)")
+	d := newDoc([]parser.Node{title, hr, p1, p2, p3})
+
+	return testPair{
+		text:     string(data),
+		expected: true,
+		doc:      d,
+	}
+}
+
 var trimb = func(s []byte) string {
 	return strings.Trim(string(s), "\n\r")
 }
@@ -339,6 +319,8 @@ func assertNodesEqual(n1 parser.Node, n2 parser.Node) (bool, error) {
 }
 
 func TestParse(t *testing.T) {
+	someTests = append(someTests, readmeTest())
+
 	for _, curTest := range someTests {
 		doc, err := parser.Parse([]byte(curTest.text))
 
@@ -353,29 +335,6 @@ func TestParse(t *testing.T) {
 			t.Errorf("%s", errs)
 		}
 	}
-}
-
-func TestParseReadme(t *testing.T) {
-	f, _ := os.Open("README.md")
-
-	data := make([]byte, 512)
-	io.ReadFull(f, data)
-	data = bytes.Trim(data, "\x00")
-
-	t.Logf("\n%s\n", data)
-	ast, err := parser.Parse(data)
-	if err != nil {
-		t.Errorf("\tParse invalid\n")
-	}
-
-	title := newNode(parser.H1, "Ragel playground")
-	hr := newNode(parser.TBreak, "-")
-	p1 := newNode(parser.Par, "A small go repository to learn some ragel usage by implementing a Common Mark parser.")
-	p2 := newNode(parser.Par, "Using the [0.27](http://spec.commonmark.org/0.27/) version of the specification.")
-	p3 := newNode(parser.Par, "[![Build Status](https://travis-ci.org/mariusor/ragel-playgrnd.svg?branch=master)](https://travis-ci.org/mariusor/ragel-playgrnd)")
-	doc := newDoc([]parser.Node{title, hr, p1, p2, p3})
-
-	t.Logf("%q\n%q\n", doc.String(), ast.String())
 }
 
 func TestMain(m *testing.M) {
