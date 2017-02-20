@@ -7,6 +7,9 @@ go:
     - 1.x
     - tip
 
+install: 
+    - go get gopkg.in/alecthomas/kingpin.v2
+
 #before_install:
 #    - echo "deb http://ftp.debian.org/debian jessie-backports main" | sudo tee /etc/apt/sources.list.d/90-jessie-backports.list
 #    - sudo apt -qq update
