@@ -8,8 +8,8 @@ go:
 
 before_install:
     - echo "deb http://ftp.debian.org/debian jessie-backports main" | sudo tee /etc/apt/sources.list.d/90-jessie-backports.list
-    - sudo apt-get -qq update
-    - sudo apt-get install -y ragel
+    - sudo apt -qq update
+    - sudo apt upgrade 
 
 addons:
   apt:
