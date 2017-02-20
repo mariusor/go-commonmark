@@ -1,14 +1,15 @@
-$TEST=go test
-$BUILD=go build
-$RUN=go run
-$RAGEL=ragel
+TEST := go test
+BUILD := go build
+RUN := go run
+RAGEL_COMPILE := ragel -Z -G2
+RAGEL_DOT := ragel -V -p
 
 .ragel:
-	ragel -Z -G2 -o cmarkparser.go cmarkparser.rl
+	$(RAGEL_COMPILE) -o cmarkparser.go cmarkparser.rl
 
 test: .ragel
-	go test -v ./...
+	$(TEST) -v ./...
 	
 dot:
-	ragel -V -p -o cmarkparser.dot cmarkparser.rl
+	$(RAGEL_DOT) -o cmarkparser.dot cmarkparser.rl
 
