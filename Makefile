@@ -4,7 +4,7 @@ $RUN=go run
 $RAGEL=ragel
 
 default: .ragel
-	go build -o mless main.go 
+	go build -o rgless ragel-playgrnd.go 
 
 .ragel:
 	ragel -Z -G2 -o parser/rgl_parser.go parser/parser.rl
