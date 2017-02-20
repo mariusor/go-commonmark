@@ -55,11 +55,11 @@ var someTests = []testPair{
 		false,
 		emptyDoc,
 	},
-	{
-		"some text",
-		true,
-		newDoc([]Node{newNode(Par, "some text")}),
-	},
+	//{
+	//	"some text",
+	//	true,
+	//	newDoc([]Node{newNode(Par, "some text")}),
+	//},
 	// null char
 	//	{
 	//		"\u0000\n",
@@ -233,18 +233,18 @@ var someTests = []testPair{
 			},
 		},
 	},
-	{
-		"   _*-*__\n",
-		true,
-		Document{
-			Children: []Node{
-				Node{
-					Type:    Par,
-					Content: []byte("   _*-*__"),
-				},
-			},
-		},
-	},
+	//	{
+	//		"   _*-*__\n",
+	//		true,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
+	//					Content: []byte("   _*-*__"),
+	//				},
+	//			},
+	//		},
+	//	},
 	// headings
 	{
 		" # ana are mere\n",
@@ -341,8 +341,8 @@ func assertNodesEqual(n1 Node, n2 Node) (bool, error) {
 func TestParse(t *testing.T) {
 	//someTests = append(someTests, readmeTest())
 
-	//for _, curTest := range someTests {
-	for _, curTest := range tests {
+	for _, curTest := range someTests {
+		//for _, curTest := range tests {
 		doc, err := Parse([]byte(curTest.text))
 
 		//t.Logf("Testing %q", trims(curTest.text))
