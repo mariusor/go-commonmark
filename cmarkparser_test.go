@@ -1,7 +1,6 @@
-package main
+package cmarkparser
 
 import (
-	"./parser"
 	"bytes"
 	"errors"
 	"fmt"
@@ -14,29 +13,29 @@ import (
 type testPair struct {
 	text     string
 	expected bool
-	doc      parser.Document
+	doc      Document
 }
 
-var emptyDoc = newDoc([]parser.Node{parser.Node{}}) //parser.Document = parser.Document{}
+var emptyDoc = newDoc([]Node{Node{}}) //Document = Document{}
 
-func newDoc(n []parser.Node) parser.Document {
-	return parser.Document{
+func newDoc(n []Node) Document {
+	return Document{
 		Children: n,
 	}
 }
 
-func newNode(t parser.NodeType, s string) parser.Node {
-	return parser.Node{Type: t, Content: []byte(s)}
+func newNode(t NodeType, s string) Node {
+	return Node{Type: t, Content: []byte(s)}
 }
 
 var tests = []testPair{
 	{
 		"  ***\n",
 		true,
-		parser.Document{
-			Children: []parser.Node{
-				parser.Node{
-					Type:    parser.TBreak,
+		Document{
+			Children: []Node{
+				Node{
+					Type:    TBreak,
 					Content: []byte("-"),
 				},
 			},
@@ -45,7 +44,7 @@ var tests = []testPair{
 	{
 		"some text",
 		true,
-		newDoc([]parser.Node{newNode(parser.Par, "some text")}),
+		newDoc([]Node{newNode(Par, "some text")}),
 	},
 }
 
@@ -59,16 +58,16 @@ var someTests = []testPair{
 	{
 		"some text",
 		true,
-		newDoc([]parser.Node{newNode(parser.Par, "some text")}),
+		newDoc([]Node{newNode(Par, "some text")}),
 	},
 	// null char
 	//	{
 	//		"\u0000\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte{0x3f},
 	//				},
 	//			},
@@ -78,10 +77,10 @@ var someTests = []testPair{
 	//	{
 	//		"\uc2a0\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("\uc2a0"),
 	//				},
 	//			},
@@ -90,10 +89,10 @@ var someTests = []testPair{
 	//	{
 	//		"\u2000\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("\u2000"),
 	//				},
 	//			},
@@ -102,10 +101,10 @@ var someTests = []testPair{
 	//	{
 	//		"\u2001\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("\u2001"),
 	//				},
 	//			},
@@ -115,10 +114,10 @@ var someTests = []testPair{
 	//	{
 	//		"[ana](httpslittrme)\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("[ana](httpslittrme)"),
 	//				},
 	//			},
@@ -127,10 +126,10 @@ var someTests = []testPair{
 	//	{
 	//		"[ana](https://littr.me)\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("[ana](https://littr.me)"),
 	//				},
 	//			},
@@ -139,10 +138,10 @@ var someTests = []testPair{
 	//	{
 	//		"some text before [test 123](https://littr.me)\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("some text before [test 123](https://littr.me)"),
 	//				},
 	//			},
@@ -151,10 +150,10 @@ var someTests = []testPair{
 	//	{
 	//		"[test 123](https://littr.me) some text after\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("[test 123](https://littr.me) some text after"),
 	//				},
 	//			},
@@ -163,10 +162,10 @@ var someTests = []testPair{
 	//	{
 	//		"some text before [test 123](https://littr.me) some text after\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("some text before [test 123](https://littr.me) some text after"),
 	//				},
 	//			},
@@ -176,10 +175,10 @@ var someTests = []testPair{
 	//	{
 	//		"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș\n",
 	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
+	//		Document{
+	//			Children: []Node{
+	//				Node{
+	//					Type:    Par,
 	//					Content: []byte("𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș"),
 	//				},
 	//			},
@@ -189,10 +188,10 @@ var someTests = []testPair{
 	{
 		" ---\n",
 		true,
-		parser.Document{
-			Children: []parser.Node{
-				parser.Node{
-					Type:    parser.TBreak,
+		Document{
+			Children: []Node{
+				Node{
+					Type:    TBreak,
 					Content: []byte("-"),
 				},
 			},
@@ -201,10 +200,10 @@ var someTests = []testPair{
 	{
 		"  ***\n",
 		true,
-		parser.Document{
-			Children: []parser.Node{
-				parser.Node{
-					Type:    parser.TBreak,
+		Document{
+			Children: []Node{
+				Node{
+					Type:    TBreak,
 					Content: []byte("-"),
 				},
 			},
@@ -213,10 +212,10 @@ var someTests = []testPair{
 	{
 		"  * * * *\n",
 		true,
-		parser.Document{
-			Children: []parser.Node{
-				parser.Node{
-					Type:    parser.TBreak,
+		Document{
+			Children: []Node{
+				Node{
+					Type:    TBreak,
 					Content: []byte("-"),
 				},
 			},
@@ -225,10 +224,10 @@ var someTests = []testPair{
 	{
 		"   ___\r",
 		true,
-		parser.Document{
-			Children: []parser.Node{
-				parser.Node{
-					Type:    parser.TBreak,
+		Document{
+			Children: []Node{
+				Node{
+					Type:    TBreak,
 					Content: []byte("-"),
 				},
 			},
@@ -237,10 +236,10 @@ var someTests = []testPair{
 	{
 		"   _*-*__\n",
 		true,
-		parser.Document{
-			Children: []parser.Node{
-				parser.Node{
-					Type:    parser.Par,
+		Document{
+			Children: []Node{
+				Node{
+					Type:    Par,
 					Content: []byte("   _*-*__"),
 				},
 			},
@@ -250,33 +249,33 @@ var someTests = []testPair{
 	{
 		" # ana are mere\n",
 		true,
-		newDoc([]parser.Node{newNode(parser.H1, "ana are mere")}),
+		newDoc([]Node{newNode(H1, "ana are mere")}),
 	},
 	{
 		"##ana are mere\n",
 		true,
-		newDoc([]parser.Node{newNode(parser.H2, "ana are mere")}),
+		newDoc([]Node{newNode(H2, "ana are mere")}),
 	},
 
 	{
 		"  ### ana are mere\n",
 		true,
-		newDoc([]parser.Node{newNode(parser.H3, "ana are mere")}),
+		newDoc([]Node{newNode(H3, "ana are mere")}),
 	},
 	{
 		"#### ana are mere\n",
 		true,
-		newDoc([]parser.Node{newNode(parser.H4, "ana are mere")}),
+		newDoc([]Node{newNode(H4, "ana are mere")}),
 	},
 	{
 		"   #####  ana-are-mere\n",
 		true,
-		newDoc([]parser.Node{newNode(parser.H5, "ana-are-mere")}),
+		newDoc([]Node{newNode(H5, "ana-are-mere")}),
 	},
 	{
 		" ######ana-are-mere\n",
 		true,
-		newDoc([]parser.Node{newNode(parser.H6, "ana-are-mere")}),
+		newDoc([]Node{newNode(H6, "ana-are-mere")}),
 	},
 }
 
@@ -287,12 +286,12 @@ var readmeTest = func() testPair {
 	io.ReadFull(f, data)
 	data = bytes.Trim(data, "\x00")
 
-	title := newNode(parser.H1, "Ragel playground")
-	hr := newNode(parser.TBreak, "-")
-	p1 := newNode(parser.Par, "A small go repository to learn some ragel usage by implementing a Common Mark parser.")
-	p2 := newNode(parser.Par, "Using the [0.27](http://spec.commonmark.org/0.27/) version of the specification.")
-	p3 := newNode(parser.Par, "[![Build Status](https://travis-ci.org/mariusor/ragel-playgrnd.svg?branch=master)](https://travis-ci.org/mariusor/ragel-playgrnd)")
-	d := newDoc([]parser.Node{title, hr, p1, p2, p3})
+	title := newNode(H1, "Ragel playground")
+	hr := newNode(TBreak, "-")
+	p1 := newNode(Par, "A small go repository to learn some ragel usage by implementing a Common Mark ")
+	p2 := newNode(Par, "Using the [0.27](http://spec.commonmark.org/0.27/) version of the specification.")
+	p3 := newNode(Par, "[![Build Status](https://travis-ci.org/mariusor/ragel-playgrnd.svg?branch=master)](https://travis-ci.org/mariusor/ragel-playgrnd)")
+	d := newDoc([]Node{title, hr, p1, p2, p3})
 
 	return testPair{
 		text:     string(data),
@@ -308,7 +307,7 @@ var trims = func(s string) string {
 	return strings.Trim(s, "\n\r")
 }
 
-func assertDocumentsEqual(d1 parser.Document, d2 parser.Document) (bool, error) {
+func assertDocumentsEqual(d1 Document, d2 Document) (bool, error) {
 	if !d1.Equal(d2) {
 		return false, errors.New(fmt.Sprintf("Expected %q, got %q", trims(d1.String()), trims(d2.String())))
 	}
@@ -329,7 +328,7 @@ func assertDocumentsEqual(d1 parser.Document, d2 parser.Document) (bool, error) 
 	return true, nil
 }
 
-func assertNodesEqual(n1 parser.Node, n2 parser.Node) (bool, error) {
+func assertNodesEqual(n1 Node, n2 Node) (bool, error) {
 	if n1.Type != n2.Type {
 		return false, errors.New(fmt.Sprintf("  Node type expected %q != %q", n1.Type.String(), n2.Type.String()))
 	}
@@ -344,7 +343,7 @@ func TestParse(t *testing.T) {
 
 	//for _, curTest := range someTests {
 	for _, curTest := range tests {
-		doc, err := parser.Parse([]byte(curTest.text))
+		doc, err := Parse([]byte(curTest.text))
 
 		//t.Logf("Testing %q", trims(curTest.text))
 

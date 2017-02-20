@@ -5,7 +5,7 @@
 // MIT License
 // 
 
-package parser
+package cmarkparser
 
 import(
     "fmt"

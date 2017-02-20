@@ -1,2 +1,2 @@
-parser/rgl_*.go
+cmarkparser.go
 .idea/
