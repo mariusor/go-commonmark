@@ -8,6 +8,7 @@ go:
     - tip
 
 install: 
+    - go get github.com/mariusor/ragel-playgrnd
     - go get gopkg.in/alecthomas/kingpin.v2
 
 #before_install:
