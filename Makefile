@@ -3,10 +3,13 @@ $BUILD=go build
 $RUN=go run
 $RAGEL=ragel
 
-_ragel:
+default: .ragel
+	go build -o mless main.go 
+
+.ragel:
 	ragel -Z -G2 -o parser/rgl_parser.go parser/parser.rl
 
-test: _ragel
+test: .ragel
 	go test -v ./...
 	
 dot:
