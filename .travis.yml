@@ -1,15 +1,16 @@
 language: go
 
-sudo: required
+dist: trusty
+sudo: false
 
 go:
     - 1.x
     - tip
 
-before_install:
-    - echo "deb http://ftp.debian.org/debian jessie-backports main" | sudo tee /etc/apt/sources.list.d/90-jessie-backports.list
-    - sudo apt -qq update
-    - sudo apt upgrade 
+#before_install:
+#    - echo "deb http://ftp.debian.org/debian jessie-backports main" | sudo tee /etc/apt/sources.list.d/90-jessie-backports.list
+#    - sudo apt -qq update
+#    - sudo apt upgrade 
 
 addons:
   apt:
