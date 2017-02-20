@@ -29,6 +29,26 @@ func newNode(t parser.NodeType, s string) parser.Node {
 	return parser.Node{Type: t, Content: []byte(s)}
 }
 
+var tests = []testPair{
+	{
+		"  ***\n",
+		true,
+		parser.Document{
+			Children: []parser.Node{
+				parser.Node{
+					Type:    parser.TBreak,
+					Content: []byte("-"),
+				},
+			},
+		},
+	},
+	{
+		"some text",
+		true,
+		newDoc([]parser.Node{newNode(parser.Par, "some text")}),
+	},
+}
+
 var someTests = []testPair{
 	// empty doc
 	{
@@ -165,67 +185,68 @@ var someTests = []testPair{
 	//			},
 	//		},
 	//	},
-	//	// headings
-	//	{
-	//		" ---\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.TBreak,
-	//					Content: []byte("-"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"  ***\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.TBreak,
-	//					Content: []byte("-"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"  * * * *\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.TBreak,
-	//					Content: []byte("-"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"   ___\r",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.TBreak,
-	//					Content: []byte("-"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"   _*-*__\n",
-	//		true,
-	//		parser.Document{
-	//			Children: []parser.Node{
-	//				parser.Node{
-	//					Type:    parser.Par,
-	//					Content: []byte("   _*-*__"),
-	//				},
-	//			},
-	//		},
-	//	},
+	// thematic breaks
+	{
+		" ---\n",
+		true,
+		parser.Document{
+			Children: []parser.Node{
+				parser.Node{
+					Type:    parser.TBreak,
+					Content: []byte("-"),
+				},
+			},
+		},
+	},
+	{
+		"  ***\n",
+		true,
+		parser.Document{
+			Children: []parser.Node{
+				parser.Node{
+					Type:    parser.TBreak,
+					Content: []byte("-"),
+				},
+			},
+		},
+	},
+	{
+		"  * * * *\n",
+		true,
+		parser.Document{
+			Children: []parser.Node{
+				parser.Node{
+					Type:    parser.TBreak,
+					Content: []byte("-"),
+				},
+			},
+		},
+	},
+	{
+		"   ___\r",
+		true,
+		parser.Document{
+			Children: []parser.Node{
+				parser.Node{
+					Type:    parser.TBreak,
+					Content: []byte("-"),
+				},
+			},
+		},
+	},
+	{
+		"   _*-*__\n",
+		true,
+		parser.Document{
+			Children: []parser.Node{
+				parser.Node{
+					Type:    parser.Par,
+					Content: []byte("   _*-*__"),
+				},
+			},
+		},
+	},
+	// headings
 	{
 		" # ana are mere\n",
 		true,
@@ -319,9 +340,10 @@ func assertNodesEqual(n1 parser.Node, n2 parser.Node) (bool, error) {
 }
 
 func TestParse(t *testing.T) {
-	someTests = append(someTests, readmeTest())
+	//someTests = append(someTests, readmeTest())
 
-	for _, curTest := range someTests {
+	//for _, curTest := range someTests {
+	for _, curTest := range tests {
 		doc, err := parser.Parse([]byte(curTest.text))
 
 		//t.Logf("Testing %q", trims(curTest.text))
