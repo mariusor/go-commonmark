@@ -24,6 +24,7 @@ func Parse (data []byte) (Document, error) {
 
 func parse(data []byte) (Document, error) {
     cs, p, pe := 0, 0, len(data)
+    //ts, te, act := 0, 0, 0
     eof := len(data)
 
     var doc Document = Document{Children: []Node{Node{}}}
@@ -40,9 +41,6 @@ func parse(data []byte) (Document, error) {
 
     %%{
         action emit_eof {
-            if mark > 0 {
-                nodes = append(nodes, NewParagraph(data[mark:p]))
-            }
             doc.Children = nodes
         }
 
@@ -53,7 +51,14 @@ func parse(data []byte) (Document, error) {
             }
         }
 
-        document = (block %emit_add_block)*;
+        single_line = (line_char | asciipunct)+; # no eol characters - meaning a single line of text
+        document = ((block %emit_add_block)* | (single_line %emit_new_line %emit_add_block));
+        #main := |* 
+        #    block => emit_add_block;
+        #    line => emit_new_line;
+        #*|;
+        
+        
         main := document %eof emit_eof;
  
         write init;
@@ -64,6 +69,7 @@ func parse(data []byte) (Document, error) {
     //fmt.Printf("last mark: %v\n", mark)
     //fmt.Printf("last level: %v\n", header_level)
 
+    //fmt.Printf("%d", ts)
     fmt.Printf("")
 
     return doc, nil

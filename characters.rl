@@ -33,21 +33,20 @@ action replace_insecure_char
 {
     // need to find a good way to insert two bytes in the place of the null char
     // this requires in place array resize :D
-    //data[p-1] = 0xff
-    //data[p] = 0xfd
-    data[p] = 0x3f;
+    data[p-1] = 0xff
+    data[p] = 0xfd
+    //data[p] = 0x3f;
 }
 
 action mark {
-    //fmt.Printf("cur: %d - %s\n", p, cs)
+    //fmt.Printf("cur: %d\n", p)
     mark = p
 }
 
 action emit_new_line {
     //fmt.Printf("nl: %d\n", p)
-    if mark > 0 {
+    if mark >= 0 {
         node = NewParagraph(data[mark:p]) 
-        mark = -1
     }
 }
 

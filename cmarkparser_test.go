@@ -28,26 +28,6 @@ func newNode(t NodeType, s string) Node {
 	return Node{Type: t, Content: []byte(s)}
 }
 
-var tests = []testPair{
-	{
-		"  ***\n",
-		true,
-		Document{
-			Children: []Node{
-				Node{
-					Type:    TBreak,
-					Content: []byte("-"),
-				},
-			},
-		},
-	},
-	{
-		"some text",
-		true,
-		newDoc([]Node{newNode(Par, "some text")}),
-	},
-}
-
 var someTests = []testPair{
 	// empty doc
 	{
@@ -55,196 +35,92 @@ var someTests = []testPair{
 		false,
 		emptyDoc,
 	},
-	//{
-	//	"some text",
-	//	true,
-	//	newDoc([]Node{newNode(Par, "some text")}),
-	//},
+	{
+		"some text",
+		true,
+		newDoc([]Node{newNode(Par, "some text")}),
+	},
 	// null char
-	//	{
-	//		"\u0000\n",
-	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte{0x3f},
-	//				},
-	//			},
-	//		},
-	//	},
+	{
+		"\u0000\n",
+		true,
+		newDoc([]Node{newNode(Par, "\xff\xfd")}),
+	},
 	// spaces
+	{
+		"\uc2a0",
+		true,
+		newDoc([]Node{newNode(Par, "\uc2a0")}),
+	},
+	{
+		"\u2000",
+		true,
+		newDoc([]Node{newNode(Par, "\u2000")}),
+	},
+	{
+		"\u2001",
+		true,
+		newDoc([]Node{newNode(Par, "\u2001")}),
+	},
+	// links, for now treated as paragraphs
 	//	{
-	//		"\uc2a0\n",
+	//		"[ana](httpslittrme)",
 	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("\uc2a0"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"\u2000\n",
-	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("\u2000"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	{
-	//		"\u2001\n",
-	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("\u2001"),
-	//				},
-	//			},
-	//		},
-	//	},
-	//	// links, for now treated as paragraphs
-	//	{
-	//		"[ana](httpslittrme)\n",
-	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("[ana](httpslittrme)"),
-	//				},
-	//			},
-	//		},
+	//		newDoc([]Node{newNode(Par, "[ana](httpslittrme)")}),
 	//	},
 	//	{
 	//		"[ana](https://littr.me)\n",
 	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("[ana](https://littr.me)"),
-	//				},
-	//			},
-	//		},
+	//		newDoc([]Node{newNode(Par, "[ana](https://littr.me)")}),
 	//	},
 	//	{
 	//		"some text before [test 123](https://littr.me)\n",
 	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("some text before [test 123](https://littr.me)"),
-	//				},
-	//			},
-	//		},
+	//		newDoc([]Node{newNode(Par, "some text before [test 123](https://littr.me)")}),
 	//	},
 	//	{
 	//		"[test 123](https://littr.me) some text after\n",
 	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("[test 123](https://littr.me) some text after"),
-	//				},
-	//			},
-	//		},
+	//		newDoc([]Node{newNode(Par, "[test 123](https://littr.me) some text after")}),
 	//	},
 	//	{
 	//		"some text before [test 123](https://littr.me) some text after\n",
 	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("some text before [test 123](https://littr.me) some text after"),
-	//				},
-	//			},
-	//		},
+	//		newDoc([]Node{newNode(Par, "some text before [test 123](https://littr.me) some text after")}),
 	//	},
-	//	// utf8 only characters
-	//	{
-	//		"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș\n",
-	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș"),
-	//				},
-	//			},
-	//		},
-	//	},
+	// utf8 only characters
+	{
+		"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș",
+		true,
+		newDoc([]Node{newNode(Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș")}),
+	},
 	// thematic breaks
 	{
 		" ---\n",
 		true,
-		Document{
-			Children: []Node{
-				Node{
-					Type:    TBreak,
-					Content: []byte("-"),
-				},
-			},
-		},
+		newDoc([]Node{newNode(TBreak, "-")}),
 	},
 	{
 		"  ***\n",
 		true,
-		Document{
-			Children: []Node{
-				Node{
-					Type:    TBreak,
-					Content: []byte("-"),
-				},
-			},
-		},
+		newDoc([]Node{newNode(TBreak, "-")}),
 	},
 	{
 		"  * * * *\n",
 		true,
-		Document{
-			Children: []Node{
-				Node{
-					Type:    TBreak,
-					Content: []byte("-"),
-				},
-			},
-		},
+		newDoc([]Node{newNode(TBreak, "-")}),
 	},
 	{
 		"   ___\r",
 		true,
-		Document{
-			Children: []Node{
-				Node{
-					Type:    TBreak,
-					Content: []byte("-"),
-				},
-			},
-		},
+		newDoc([]Node{newNode(TBreak, "-")}),
 	},
-	//	{
-	//		"   _*-*__\n",
-	//		true,
-	//		Document{
-	//			Children: []Node{
-	//				Node{
-	//					Type:    Par,
-	//					Content: []byte("   _*-*__"),
-	//				},
-	//			},
-	//		},
-	//	},
+	// misleading thematic break
+	{
+		"   _*-*__",
+		true,
+		newDoc([]Node{newNode(Par, "   _*-*__")}),
+	},
 	// headings
 	{
 		" # ana are mere\n",
