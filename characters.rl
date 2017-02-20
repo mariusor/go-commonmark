@@ -39,13 +39,16 @@ action replace_insecure_char
 }
 
 action mark {
-    //fmt.Printf("cur: %d\n", p)
+    //fmt.Printf("cur: %d - %s\n", p, cs)
     mark = p
 }
 
 action emit_new_line {
-    fmt.Printf("nl: %d\n", p)
-    node = NewParagraph(data[mark:p]) 
+    //fmt.Printf("nl: %d\n", p)
+    if mark > 0 {
+        node = NewParagraph(data[mark:p]) 
+        mark = -1
+    }
 }
 
 action two_byte_utf8_space {
@@ -94,7 +97,7 @@ utf8sp = (0xc2 0xa0)                              %two_byte_utf8_space       | #
 # Space and tab characters
 sp = 0x20 | 0x09 | utf8sp;
 
-ws = sp | eol;
+#wsp = sp | eol;
 
 char = asciic | utf8c;
 

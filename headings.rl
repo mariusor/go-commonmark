@@ -27,14 +27,17 @@ action emit_heading_level_end
 
 action emit_heading_end
 {
-    node = NewHeading(heading_level, data[mark:p])
+    if mark > 0 {
+        node = NewHeading(heading_level, data[mark:p])
+        mark = -1
+    }
 }
 
 heading_level = ('#'{1,6} @emit_heading_level %emit_heading_level_end);
 heading_char = (line_char | asciipunct);
 
 heading = heading_level sp* (heading_char+ >mark);
-atx_heading = (ws{0,3} heading) eol >emit_heading_end eol?;
+atx_heading = (sp{0,3} heading) eol >emit_heading_end eol?;
 
 #write data nofinal;
 }%%

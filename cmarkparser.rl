@@ -40,7 +40,7 @@ func parse(data []byte) (Document, error) {
 
     %%{
         action emit_eof {
-            if node.Empty() {
+            if mark > 0 {
                 nodes = append(nodes, NewParagraph(data[mark:p]))
             }
             doc.Children = nodes
@@ -49,6 +49,7 @@ func parse(data []byte) (Document, error) {
         action emit_add_block {
             if !node.Empty() {
                 nodes = append(nodes, node)
+                mark = -1
             }
         }
 

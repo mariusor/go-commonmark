@@ -9,7 +9,10 @@
 machine blocks;
 
 action emit_paragraph {
-    node.children = append(node.children, NewParagraph(data[mark:p]) 
+    if mark > 0 {
+        node.children = append(node.children, NewParagraph(data[mark:p]) 
+        mark = -1
+    }
 }
 
 include thematic_breaks "thematic_breaks.rl";
