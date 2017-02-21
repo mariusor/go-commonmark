@@ -103,17 +103,17 @@ var someTests = []testPair{
 	{
 		"  ***\n",
 		true,
-		newDoc([]Node{newNode(TBreak, "-")}),
+		newDoc([]Node{newNode(TBreak, "*")}),
 	},
 	{
 		"  * * * *\n",
 		true,
-		newDoc([]Node{newNode(TBreak, "-")}),
+		newDoc([]Node{newNode(TBreak, "*")}),
 	},
 	{
 		"   ___\r",
 		true,
-		newDoc([]Node{newNode(TBreak, "-")}),
+		newDoc([]Node{newNode(TBreak, "_")}),
 	},
 	// misleading thematic break
 	{
@@ -128,7 +128,7 @@ var someTests = []testPair{
 		newDoc([]Node{newNode(H1, "ana are mere")}),
 	},
 	{
-		"##ana are mere\n",
+		"## ana are mere\n",
 		true,
 		newDoc([]Node{newNode(H2, "ana are mere")}),
 	},
@@ -149,7 +149,7 @@ var someTests = []testPair{
 		newDoc([]Node{newNode(H5, "ana-are-mere")}),
 	},
 	{
-		" ######ana-are-mere\n",
+		" ###### ana-are-mere\n",
 		true,
 		newDoc([]Node{newNode(H6, "ana-are-mere")}),
 	},
@@ -217,19 +217,17 @@ func assertNodesEqual(n1 Node, n2 Node) (bool, error) {
 func TestParse(t *testing.T) {
 	//someTests = append(someTests, readmeTest())
 
+	var err error
+	var doc Document
 	for _, curTest := range someTests {
-		//for _, curTest := range tests {
-		doc, err := Parse([]byte(curTest.text))
+		doc, err = Parse([]byte(curTest.text))
 
-		//t.Logf("Testing %q", trims(curTest.text))
-
-		if err != nil && curTest.expected {
-			t.Errorf(" Parse result invalid, expected %t, got %v\n", curTest.expected)
-		}
-
-		_, errs := assertDocumentsEqual(curTest.doc, doc)
-		if errs != nil {
-			t.Errorf("%s", errs)
+		//if err != nil && curTest.expected {
+		//	t.Errorf(" Parse result invalid, expected %t, got %v\n", curTest.expected)
+		//}
+		_, err = assertDocumentsEqual(curTest.doc, doc)
+		if err != nil {
+			t.Errorf("\n%s", err)
 		}
 	}
 }

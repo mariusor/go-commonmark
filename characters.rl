@@ -61,10 +61,10 @@ insecure = 0x00 %replace_insecure_char;
 
 # http://spec.commonmark.org/0.27/#ascii-punctuation-character
 # ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
-asciipunct = (0x21..0x2f | 0x3a..0x40 | 0x5b..0x60 | 0x7b..0x7e);
+punctuation = (0x21..0x2f | 0x3a..0x40 | 0x5b..0x60 | 0x7b..0x7e);
 
 # all the printable ASCII characters (0x20 to 0x7e) excluding those explicitly covered elsewhere
-asciic = (0x21..0x7e) -- asciipunct;
+ascii_char = (0x21..0x7e) -- punctuation;
 
 # @see: https://git.wincent.com/wikitext.git/blob/4bb2e23eebaf25c6f1dddb721f074f69375d222a:/ext/wikitext/wikitext_ragel.rl
 # here is where we handle the UTF-8 and everything else 
@@ -78,31 +78,29 @@ asciic = (0x21..0x7e) -- asciipunct;
 #       1100000x (c0 c1)    overlong encoding, lead byte of 2 byte seq but code point <= 127
 #       11110101 (f5)       restricted by RFC 3629 lead byte of 4-byte sequence for codepoint above 10ffff
 #       1111011x (f6, f7)   restricted by RFC 3629 lead byte of 4-byte sequence for codepoint above 10ffff
-utf8c = (0x01..0x1f | 0x7f)                             %non_printable_ascii        |
-        (0xc2..0xdf 0x80..0xbf)                         %two_byte_utf8_sequence     |
-        (0xe0..0xef 0x80..0xbf 0x80..0xbf)              %three_byte_utf8_sequence   |
-        (0xf0..0xf4 0x80..0xbf 0x80..0xbf 0x80..0xbf)   %four_byte_utf8_sequence;
+utf8_char = (0x01..0x1f | 0x7f)                             %non_printable_ascii        |
+            (0xc2..0xdf 0x80..0xbf)                         %two_byte_utf8_sequence     |
+            (0xe0..0xef 0x80..0xbf 0x80..0xbf)              %three_byte_utf8_sequence   |
+            (0xf0..0xf4 0x80..0xbf 0x80..0xbf 0x80..0xbf)   %four_byte_utf8_sequence;
 
 # LF and CR characters
-eol = (0x0a | 0x0d);
+eol = (0x0d? 0x0a | 0x0d);
 
 # UTF-8 white space characters
-utf8sp = (0xc2 0xa0)                              %two_byte_utf8_space       | # no-break-space 
-         ( 0xe1 0x9a 0x80                                                    | # ogham space
-           0xe2 0x80 (0x80..0x8a | 0xaf | 0x9f)                              | # en and em quad, en and em space, three, four and six per em space, figure space, punctuation space
-                                                                               #    thin space, hair space, narrow no-break space, medium mathematical space
-           0xe3 0x80 0x80)                        %three_byte_utf8_space;      # ideographic space
+utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-space 
+             (0xe1 0x9a 0x80                                   | # ogham space
+             (0xe2 0x80 (0x80..0x8a | 0xaf | 0x9f))            | # en/em quad, en/em space, three, four and six per em space, figure space, punctuation space, 
+                                                                 #   thin space, hair space, narrow no-break space, medium mathematical space
+             (0xe3 0x80 0x80))         %three_byte_utf8_space;   # ideographic space
 
-# Space and tab characters
-sp = 0x20 | 0x09 | utf8sp;
+# Space, tab and utf8 space characters -> inline space
+i_space = 0x20 | 0x09 | utf8_space;
 
-#wsp = sp | eol;
+ws = i_space | eol;
 
-char = asciic | utf8c;
+character = ascii_char | utf8_char;
+line_char = (i_space | character | insecure);
 
-line_char = (sp | char | insecure);
-line = line_char* >mark eol;
-#line = line_char* >mark eol %emit_new_line;
-
-#write data nofinal;
+# eol terminated line
+line = (line_char* >mark eol);
 }%%

@@ -38,6 +38,7 @@ func parse(data []byte) (Document, error) {
     //fmt.Printf("Incoming str: %#v - len %d\n", data, len(data))
 
     var mark int
+    var thematic_break_symbol byte;
 
     %%{
         action emit_eof {
@@ -50,9 +51,10 @@ func parse(data []byte) (Document, error) {
                 mark = -1
             }
         }
+        single_line_doc = (line_char | punctuation)+ >mark %emit_new_line;
+        document = ((block %emit_add_block)* | (single_line_doc %emit_add_block));
 
-        single_line = (line_char | asciipunct)+; # no eol characters - meaning a single line of text
-        document = ((block %emit_add_block)* | (single_line %emit_new_line %emit_add_block));
+
         #main := |* 
         #    block => emit_add_block;
         #    line => emit_new_line;

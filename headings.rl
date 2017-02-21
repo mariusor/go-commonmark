@@ -33,11 +33,12 @@ action emit_heading_end
     }
 }
 
-heading_level = ('#'{1,6} @emit_heading_level %emit_heading_level_end);
-heading_char = (line_char | asciipunct);
+heading_symbol = 0x23;
+heading_level = (heading_symbol{1,6} @emit_heading_level %emit_heading_level_end);
+heading_char = (line_char | punctuation);
 
-heading = heading_level sp* (heading_char+ >mark);
-atx_heading = (sp{0,3} heading) eol >emit_heading_end eol?;
+heading = heading_level i_space+ (heading_char+ >mark);
+atx_heading = (i_space{0,3} heading) eol >emit_heading_end eol?;
 
 #write data nofinal;
 }%%
