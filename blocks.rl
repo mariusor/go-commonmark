@@ -9,18 +9,15 @@
 machine blocks;
 
 action emit_paragraph {
-    if mark > 0 {
-        node.children = append(node.children, NewParagraph(data[mark:p]) 
-        mark = -1
-    }
+    node.children = append(node.children, NewParagraph(data[mark:p]) 
 }
 
 include thematic_breaks "thematic_breaks.rl";
 include headings "headings.rl";
 
-paragraph = line* eol;
+paragraph = line* eol?;
 
-leaf_block = thematic_break | atx_heading;
+leaf_block = (thematic_break | atx_heading) eol?;
 
 container_block = paragraph;
 

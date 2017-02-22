@@ -8,8 +8,11 @@ RAGEL_DOT := ragel -V -p
 	$(RAGEL_COMPILE) -o cmarkparser.go cmarkparser.rl
 
 test: .ragel
-	$(TEST) -v ./...
+	$(TEST) -v ./... -args quiet 
 	
 dot:
 	$(RAGEL_DOT) -o cmarkparser.dot cmarkparser.rl
+
+vtest: .ragel
+	$(TEST) -v ./...
 

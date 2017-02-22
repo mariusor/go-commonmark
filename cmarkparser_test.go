@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -215,8 +217,19 @@ func assertNodesEqual(n1 Node, n2 Node) (bool, error) {
 }
 
 func TestParse(t *testing.T) {
-	someTests = append(someTests, readmeTest())
+	//someTests = append(someTests, readmeTest())
 
+	contains := func(slice []string, s string) bool {
+		for _, el := range slice {
+			if s == el {
+				return true
+			}
+		}
+		return false
+	}
+	if contains(os.Args, "quiet") {
+		log.SetOutput(ioutil.Discard)
+	}
 	var err error
 	var doc Document
 	for _, curTest := range someTests {

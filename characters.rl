@@ -31,9 +31,9 @@ action four_byte_utf8_sequence
 
 action replace_insecure_char 
 {
+    //log.Printf("insecurepos %d", p)
     data = arr_splice(data, []byte{0xef, 0xbf, 0xbd}, p)
     // readjusting the pointers, as we just resized the data buffer
-    p += 2
     eof = len(data)
     pe = eof
 }
@@ -46,9 +46,7 @@ action mark {
 action emit_add_line {
     //fmt.Printf("nl: %d\n", p)
     if node.Empty() {
-        if mark >= 0 {
-            if p < pe-1 { p++ }
-        }
+
         node = NewParagraph(data[mark:p]) 
     }
 }
@@ -88,7 +86,7 @@ utf8_char = (0x01..0x1f | 0x7f)                             %non_printable_ascii
             (0xf0..0xf4 0x80..0xbf 0x80..0xbf 0x80..0xbf)   %four_byte_utf8_sequence;
 
 # LF and CR characters
-eol = (0x0d? 0x0a | 0x0d) >emit_add_line;
+eol = ((0x0d? 0x0a) | 0x0d) >emit_add_line;
 
 # UTF-8 white space characters
 utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-space 
@@ -106,5 +104,5 @@ character = ascii_char | utf8_char;
 line_char = (i_space | character | insecure);
 
 # eol terminated line
-line = (line_char* >mark eol);
+line = (line_char* eol);
 }%%

@@ -8,7 +8,7 @@
 package cmarkparser
 
 import(
-    "fmt"
+    "log"
     "errors"
 )
 
@@ -49,25 +49,28 @@ func parse(data []byte) (Document, error) {
     var node Node
     var heading_level uint;
     var nodes []Node;
-    //fmt.Printf("Incoming str: %#v - len %d\n", data, len(data))
+    log.Printf("Incoming: %#v - len %d\n", data, len(data))
 
     var mark int
-    var thematic_break_symbol byte;
+    var thematic_break_symbol byte
 
     %%{
         action emit_eof {
+            log.Printf("%#v\n", nodes)
             doc.Children = nodes
+            log.Printf("eof:%d:%d\n", p, eof)
         }
 
         action emit_add_block {
             if !node.Empty() {
                 nodes = append(nodes, node)
-                mark = -1
+                log.Printf("%#v, %#v\n", nodes, node.String())
+                node = Node{}
             }
+            
         }
-        single_line_doc = (line_char | punctuation)+ >mark %emit_add_line;
+        single_line_doc = (any)+ >mark %emit_add_line;
         document = ((block %emit_add_block)* | (single_line_doc %emit_add_block));
-
 
         #main := |* 
         #    block => emit_add_block;
@@ -80,13 +83,6 @@ func parse(data []byte) (Document, error) {
         write init;
         write exec;
     }%%
-
-    //fmt.Printf("last node: %v\n", node)
-    //fmt.Printf("last mark: %v\n", mark)
-    //fmt.Printf("last level: %v\n", header_level)
-
-    //fmt.Printf("%d", ts)
-    fmt.Printf("")
 
     return doc, nil
 }
