@@ -31,11 +31,11 @@ action four_byte_utf8_sequence
 
 action replace_insecure_char 
 {
-    // need to find a good way to insert two bytes in the place of the null char
-    // this requires in place array resize :D
-    data[p-1] = 0xff
-    data[p] = 0xfd
-    //data[p] = 0x3f;
+    data = arr_splice(data, []byte{0xef, 0xbf, 0xbd}, p)
+    // readjusting the pointers, as we just resized the data buffer
+    p += 2
+    eof = len(data)
+    pe = eof
 }
 
 action mark {
@@ -57,7 +57,8 @@ action three_byte_utf8_space {
 //    fmt.Printf("3bsp %s\n", data[p-3:p]);
 }
 
-insecure = 0x00 %replace_insecure_char;
+replacement = 0xef 0xbf 0xbd;
+insecure = 0x00 >replace_insecure_char;
 
 # http://spec.commonmark.org/0.27/#ascii-punctuation-character
 # ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~

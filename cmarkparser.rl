@@ -22,6 +22,20 @@ func Parse (data []byte) (Document, error) {
 
 %% write data;
 
+func arr_splice(dst []byte, src []byte, pos int) []byte {
+    var ret = make([]byte, 0)
+	for _, a := range dst[:pos] {
+		ret = append (ret, a)
+	}
+	for _, b := range src {
+		ret = append (ret, b)
+	}
+	for _, c := range dst[pos+1:]{
+		ret = append (ret, c)
+	}
+    return ret
+}
+
 func parse(data []byte) (Document, error) {
     cs, p, pe := 0, 0, len(data)
     //ts, te, act := 0, 0, 0

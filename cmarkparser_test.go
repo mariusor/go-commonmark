@@ -42,9 +42,9 @@ var someTests = []testPair{
 	},
 	// null char
 	{
-		"\u0000\n",
+		"\x00",
 		true,
-		newDoc([]Node{newNode(Par, "\xff\xfd")}),
+		newDoc([]Node{newNode(Par, "\ufffd")}),
 	},
 	// spaces
 	{
