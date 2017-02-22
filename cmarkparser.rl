@@ -65,7 +65,7 @@ func parse(data []byte) (Document, error) {
                 mark = -1
             }
         }
-        single_line_doc = (line_char | punctuation)+ >mark %emit_new_line;
+        single_line_doc = (line_char | punctuation)+ >mark %emit_add_line;
         document = ((block %emit_add_block)* | (single_line_doc %emit_add_block));
 
 

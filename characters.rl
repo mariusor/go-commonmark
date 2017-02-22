@@ -43,9 +43,12 @@ action mark {
     mark = p
 }
 
-action emit_new_line {
+action emit_add_line {
     //fmt.Printf("nl: %d\n", p)
-    if mark >= 0 {
+    if node.Empty() {
+        if mark >= 0 {
+            if p < pe-1 { p++ }
+        }
         node = NewParagraph(data[mark:p]) 
     }
 }
@@ -85,7 +88,7 @@ utf8_char = (0x01..0x1f | 0x7f)                             %non_printable_ascii
             (0xf0..0xf4 0x80..0xbf 0x80..0xbf 0x80..0xbf)   %four_byte_utf8_sequence;
 
 # LF and CR characters
-eol = (0x0d? 0x0a | 0x0d);
+eol = (0x0d? 0x0a | 0x0d) >emit_add_line;
 
 # UTF-8 white space characters
 utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-space 

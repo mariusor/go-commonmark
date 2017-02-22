@@ -215,16 +215,13 @@ func assertNodesEqual(n1 Node, n2 Node) (bool, error) {
 }
 
 func TestParse(t *testing.T) {
-	//someTests = append(someTests, readmeTest())
+	someTests = append(someTests, readmeTest())
 
 	var err error
 	var doc Document
 	for _, curTest := range someTests {
 		doc, err = Parse([]byte(curTest.text))
 
-		//if err != nil && curTest.expected {
-		//	t.Errorf(" Parse result invalid, expected %t, got %v\n", curTest.expected)
-		//}
 		_, err = assertDocumentsEqual(curTest.doc, doc)
 		if err != nil {
 			t.Errorf("\n%s", err)
