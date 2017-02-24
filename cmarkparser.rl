@@ -64,7 +64,7 @@ func parse(data []byte) (Document, error) {
         action emit_add_block {
             if !node.Empty() {
                 nodes = append(nodes, node)
-                log.Printf("%#v, %#v\n", nodes, node.String())
+                log.Printf("appending node: %q\n", node.String())
                 node = Node{}
             }
             

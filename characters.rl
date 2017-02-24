@@ -11,27 +11,34 @@ machine character_definitions;
 
 action non_printable_ascii
 {
-    //fmt.Printf("np: %s\n", data[p]);
+    //log.Printf("np: %s\n", data[p]);
 }
 
 action two_byte_utf8_sequence
 {
-    //fmt.Printf("2b %s\n", data[p-2:p]);
+    //log.Printf("2b %s\n", data[p-2:p]);
 }
 
 action three_byte_utf8_sequence
 {
-    //fmt.Printf("3b %s\n", data[p-3:p]);
+    //log.Printf("3b %s\n", data[p-3:p]);
 }
 
 action four_byte_utf8_sequence
 {
-    //fmt.Printf("4b %s\n", data[p-4:p]);
+    //log.Printf("4b %s\n", data[p-4:p]);
+}
+
+action two_byte_utf8_space {
+    //log.Printf("2bsp %s\n", data[p-2:p]);
+}
+action three_byte_utf8_space {
+    //log.Printf("3bsp %s\n", data[p-3:p]);
 }
 
 action replace_insecure_char 
 {
-    //log.Printf("insecurepos %d", p)
+    log.Printf("insecurepos %d", p)
     data = arr_splice(data, []byte{0xef, 0xbf, 0xbd}, p)
     // readjusting the pointers, as we just resized the data buffer
     eof = len(data)
@@ -39,23 +46,22 @@ action replace_insecure_char
 }
 
 action mark {
-    //fmt.Printf("cur: %d\n", p)
+    log.Printf("cur: %d\n", p)
     mark = p
 }
 
 action emit_add_line {
-    //fmt.Printf("nl: %d\n", p)
+//    if !node.Empty() {
+//        node.Children = append(node.Children, NewInlineText(data[mark:p]))
+//    }
     if node.Empty() {
-
-        node = NewParagraph(data[mark:p]) 
+        node = NewParagraph(data[mark:p])
     }
+    log.Printf("nl: %d\ncurnode %q", p, node.String())
 }
 
-action two_byte_utf8_space {
-//    fmt.Printf("2bsp %s\n", data[p-2:p]);
-}
-action three_byte_utf8_space {
-//    fmt.Printf("3bsp %s\n", data[p-3:p]);
+action emit_add_paragraph {
+    log.Printf("eop: %d\n", p)
 }
 
 replacement = 0xef 0xbf 0xbd;
@@ -87,6 +93,7 @@ utf8_char = (0x01..0x1f | 0x7f)                             %non_printable_ascii
 
 # LF and CR characters
 eol = ((0x0d? 0x0a) | 0x0d) >emit_add_line;
+eop = eol{2} >emit_add_paragraph;
 
 # UTF-8 white space characters
 utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-space 
@@ -101,8 +108,8 @@ i_space = 0x20 | 0x09 | utf8_space;
 ws = i_space | eol;
 
 character = ascii_char | utf8_char;
-line_char = (i_space | character | insecure);
+line_char = i_space | character | insecure;
 
 # eol terminated line
-line = (line_char* eol);
+line = line_char* eol;
 }%%

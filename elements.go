@@ -5,6 +5,15 @@ import (
 	"fmt"
 )
 
+func NewInlineText(cont []byte) Node {
+	var el Node
+
+	el.Type = InlineText
+	el.Content = cont
+
+	return el
+}
+
 func NewParagraph(cont []byte) Node {
 	var el Node
 
@@ -18,7 +27,7 @@ func NewThematicBreak(t byte) Node {
 	var el Node
 
 	el.Type = TBreak
-	el.Content = append(el.Content, t)
+	el.Content = []byte{t}
 
 	return el
 }
@@ -84,7 +93,7 @@ func (d *Document) Equal(td Document) bool {
 func (d *Document) String() string {
 	var buffer bytes.Buffer
 	for _, c := range d.Children {
-		buffer.WriteString(c.String())
+		buffer.WriteString(fmt.Sprintf("  %s\n", c.String()))
 	}
 	return buffer.String()
 }
@@ -100,7 +109,7 @@ func (n *Node) String() string {
 		buffer.WriteString("\n[")
 	}
 	for _, c := range n.Children {
-		buffer.WriteString(fmt.Sprintf("\t%s", c.String()))
+		buffer.WriteString(fmt.Sprintf("  %s\n", c.String()))
 	}
 	if len(n.Children) > 0 {
 		buffer.WriteString("]")
@@ -113,6 +122,7 @@ type NodeType uint8
 const (
 	None NodeType = iota
 	Doc
+	InlineText
 	H1
 	H2
 	H3
@@ -127,6 +137,8 @@ func (nt *NodeType) String() string {
 	switch *nt {
 	case Doc:
 		return "doc"
+	case InlineText:
+		return "txt"
 	case Par:
 		return "par"
 	case TBreak:

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -187,7 +188,7 @@ var trims = func(s string) string {
 
 func assertDocumentsEqual(d1 Document, d2 Document) (bool, error) {
 	if !d1.Equal(d2) {
-		return false, errors.New(fmt.Sprintf("Expected %q, got %q", trims(d1.String()), trims(d2.String())))
+		return false, errors.New(fmt.Sprintf("Expected \n%s\n%s", trims(d1.String()), trims(d2.String())))
 	}
 	d1Children := d1.Children
 	d2Children := d2.Children
@@ -217,19 +218,7 @@ func assertNodesEqual(n1 Node, n2 Node) (bool, error) {
 }
 
 func TestParse(t *testing.T) {
-	//someTests = append(someTests, readmeTest())
 
-	contains := func(slice []string, s string) bool {
-		for _, el := range slice {
-			if s == el {
-				return true
-			}
-		}
-		return false
-	}
-	if contains(os.Args, "quiet") {
-		log.SetOutput(ioutil.Discard)
-	}
 	var err error
 	var doc Document
 	for _, curTest := range someTests {
@@ -242,6 +231,70 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func load_files(ext string) ([]string, error) {
+	var files []string
+
+	dir := "./tests"
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !f.IsDir() && path[len(path)-len(ext):] == ext {
+			files = append(files, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Could not load files %s/*%s", dir, ext))
+	}
+
+	return files, nil
+}
+
+func TestWithFiles(t *testing.T) {
+	var tests []string
+	var res []string
+	var err error
+
+	tests, err = load_files(".md")
+	res, err = load_files(".json")
+
+	tests = append(tests, "README.md")
+	res = append(res, "")
+
+	log.Printf("testfiles: %v\nresults: %v\n", tests, res)
+	var doc Document
+	for _, path := range tests {
+		f, _ := os.Open(path)
+
+		data := make([]byte, 512)
+		io.ReadFull(f, data)
+		data = bytes.Trim(data, "\x00")
+
+		doc, err = Parse(data)
+
+		if err == nil {
+			log.Printf("%q", doc.String())
+		}
+
+		if err != nil {
+			t.Errorf("\n%s", err)
+		}
+	}
+}
+
 func TestMain(m *testing.M) {
+	if func(slice []string, s string) bool {
+		for _, el := range slice {
+			if s == el {
+				return true
+			}
+		}
+		return false
+	}(os.Args, "quiet") {
+		log.SetOutput(ioutil.Discard)
+	}
 	os.Exit(m.Run())
 }
