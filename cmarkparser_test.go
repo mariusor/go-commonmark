@@ -43,7 +43,7 @@ func (n *NodeType) UnmarshalJSON(data []byte) error {
 type testNode struct {
 	Type     NodeType
 	Content  string
-	Children []testNode
+	Children []testNode `json:",omitempty"`
 }
 
 func newNode(t NodeType, s string) testNode {
@@ -249,7 +249,7 @@ var trims = func(s string) string {
 
 func assertDocumentsEqual(d1 testDocument, d2 Document) (bool, error) {
 	if !d1.Equal(d2) {
-		return false, errors.New(fmt.Sprintf("Expected\n____\n%sGot\n____\n%s", trims(d1.String()), trims(d2.String())))
+		return false, errors.New(fmt.Sprintf("\n____ expected ____\n%s\n______ got  ______\n%s", trims(d1.String()), trims(d2.String())))
 	}
 	d1Children := d1.Children
 	d2Children := d2.Children
@@ -332,16 +332,14 @@ func TestWithFiles(t *testing.T) {
 	tests, err = load_files(".md")
 
 	log.Printf("testfiles: %v\nresults: %v\n", tests, res)
-	var doc Document
-	var res_doc testDocument
 	for _, path := range tests {
+		var doc Document
+		var res_doc testDocument
 		data := get_file_contents(path)
 		log.Printf("%s:%s", path, path[:len(path)-3])
 		res_path := fmt.Sprintf("%s.json", path[:len(path)-3])
-		result := json.Unmarshal(get_file_contents(res_path), &res_doc)
+		json.Unmarshal(get_file_contents(res_path), &res_doc)
 
-		log.Printf("%s - %v: %q\n", res_path, result, res_doc.String())
-		t.Logf("%s - %v: %q\n", res_path, result, res_doc.String())
 		doc, err = Parse(data)
 
 		if err == nil {
@@ -353,7 +351,7 @@ func TestWithFiles(t *testing.T) {
 		}
 		_, err = assertDocumentsEqual(res_doc, doc)
 		if err != nil {
-			t.Errorf("\n%s", err)
+			t.Errorf("\nFor %s\n%s", path, err)
 		}
 	}
 }
