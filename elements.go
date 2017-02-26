@@ -133,59 +133,31 @@ const (
 	TBreak
 )
 
-func (nt *NodeType) UnmarshalJSON(val []byte) error {
-	switch string(val) {
-	case "doc":
-		*nt = Doc
-	case "txt":
-		*nt = InlineText
-	case "par":
-		*nt = Par
-	case "tbr":
-		*nt = TBreak
-	case "h1":
-		*nt = H1
-	case "h2":
-		*nt = H2
-	case "h3":
-		*nt = H3
-	case "h4":
-		*nt = H4
-	case "h5":
-		*nt = H5
-	case "h6":
-		*nt = H6
-	default:
-		*nt = None
-	}
-	return nil
+var nodeTypeMap = map[string]NodeType{
+	"nil": None,
+	"doc": Doc,
+	"txt": InlineText,
+	"h1":  H1,
+	"h2":  H2,
+	"h3":  H3,
+	"h4":  H4,
+	"h5":  H5,
+	"h6":  H6,
+	"par": Par,
+	"tbr": TBreak,
+}
+
+func getNodeType(s string) NodeType {
+	return nodeTypeMap[s]
 }
 
 func (nt *NodeType) String() string {
-	switch *nt {
-	case Doc:
-		return "doc"
-	case InlineText:
-		return "txt"
-	case Par:
-		return "par"
-	case TBreak:
-		return "tbr"
-	case H1:
-		return "h1"
-	case H2:
-		return "h2"
-	case H3:
-		return "h3"
-	case H4:
-		return "h4"
-	case H5:
-		return "h5"
-	case H6:
-		return "h6"
-	default:
-		return "nil"
+	for key, node := range nodeTypeMap {
+		if node == *nt {
+			return key
+		}
 	}
+	return "nil"
 }
 
 type Document struct {
@@ -195,6 +167,6 @@ type Document struct {
 type Node struct {
 	Type     NodeType
 	Content  []byte
-	Children []Node `json:",omitempty"`
+	Children []Node
 	//Attributes map[string]string
 }
