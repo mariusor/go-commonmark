@@ -133,6 +133,34 @@ const (
 	TBreak
 )
 
+func (nt *NodeType) UnmarshalJSON(val []byte) error {
+	switch string(val) {
+	case "doc":
+		*nt = Doc
+	case "txt":
+		*nt = InlineText
+	case "par":
+		*nt = Par
+	case "tbr":
+		*nt = TBreak
+	case "h1":
+		*nt = H1
+	case "h2":
+		*nt = H2
+	case "h3":
+		*nt = H3
+	case "h4":
+		*nt = H4
+	case "h5":
+		*nt = H5
+	case "h6":
+		*nt = H6
+	default:
+		*nt = None
+	}
+	return nil
+}
+
 func (nt *NodeType) String() string {
 	switch *nt {
 	case Doc:
@@ -167,6 +195,6 @@ type Document struct {
 type Node struct {
 	Type     NodeType
 	Content  []byte
-	Children []Node
+	Children []Node `json:",omitempty"`
 	//Attributes map[string]string
 }

@@ -2,6 +2,7 @@ package cmarkparser
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -253,26 +254,33 @@ func load_files(ext string) ([]string, error) {
 	return files, nil
 }
 
+func get_file_contents(path string) []byte {
+	f, _ := os.Open(path)
+
+	data := make([]byte, 512)
+	io.ReadFull(f, data)
+	data = bytes.Trim(data, "\x00")
+
+	return data
+}
+
 func TestWithFiles(t *testing.T) {
 	var tests []string
 	var res []string
 	var err error
 
 	tests, err = load_files(".md")
-	res, err = load_files(".json")
-
-	tests = append(tests, "README.md")
-	res = append(res, "")
 
 	log.Printf("testfiles: %v\nresults: %v\n", tests, res)
 	var doc Document
+	var res_doc Document
 	for _, path := range tests {
-		f, _ := os.Open(path)
+		data := get_file_contents(path)
+		log.Printf("%s:%s", path, path[:len(path)-3])
+		res_path := fmt.Sprintf("%s.json", path[:len(path)-3])
+		result := json.Unmarshal(get_file_contents(res_path), &res_doc)
 
-		data := make([]byte, 512)
-		io.ReadFull(f, data)
-		data = bytes.Trim(data, "\x00")
-
+		t.Logf("%s - %v\n", res_path, result)
 		doc, err = Parse(data)
 
 		if err == nil {
