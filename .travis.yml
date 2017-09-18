@@ -10,16 +10,17 @@ addons:
     - ragel
 
 env:
-  secure: "iHieJ/6tosymBumr1MfdCAqe+gcHPpP73Oei8S9vrFTi0ne/ALCxpBBBVztfYJs/A0xDXVeiPx2tl09Y3yAOpCmLvXzYEKek5mAzDQgxF4n7SDUVw4smw1z/0GJlDIMUtuJdafKC7pqDtvtxy0AEFg2WBAO7XbuUujGQGPb9UW44Qr1ZeXWwaqXhjKKejwlTBuNv7gLgzepYJk6KPOki5SPV3AVATKMlgEQmZqVzwRaOV/F4VwPXNYwI8VaabPGaHW3ElHP8/ygF3w8Nv+GX6uhCmSanhJ19/Eba4ju3whs6duGU4b7qnrTYj3n2ll6DbGXmrAYb5FwEe5UrRzLIBQjWpjBYENPKFkBlI6cSKlGcXVYx1ltC7KK40ILAzLkxnr7Z3sbgDGxITVBOQr2TUnMcKKN8ObrDQ/Z30WfJkfgDtrLTJTDp3v9989bgpVtqP114yKOSTbU0cnwkwjPaKS2gWJMOXpzWB+XBG98z+VHtiC+jiGXvGQfef86wt6yYsBPgsGMdEhlOEGoyDyhYHyY3tqNjRcLySmwAV0051Tu6rr0z8vtdgd6Tcw+zR2qjeKGw5QZ2ISwsrJE1+neyPEP/VYzbKcEQWBTneLih9fio+aMGVzF9em2C/Mg3DhHEd5veyXFndkgJmhezlveJ70/nY9nmwLrRlRkySAQHpSY="
-
-install:
-- go get github.com/mattn/goveralls
-
-script: 
-- ragel --version
-- make test
-- goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+  secure: iHieJ/6tosymBumr1MfdCAqe+gcHPpP73Oei8S9vrFTi0ne/ALCxpBBBVztfYJs/A0xDXVeiPx2tl09Y3yAOpCmLvXzYEKek5mAzDQgxF4n7SDUVw4smw1z/0GJlDIMUtuJdafKC7pqDtvtxy0AEFg2WBAO7XbuUujGQGPb9UW44Qr1ZeXWwaqXhjKKejwlTBuNv7gLgzepYJk6KPOki5SPV3AVATKMlgEQmZqVzwRaOV/F4VwPXNYwI8VaabPGaHW3ElHP8/ygF3w8Nv+GX6uhCmSanhJ19/Eba4ju3whs6duGU4b7qnrTYj3n2ll6DbGXmrAYb5FwEe5UrRzLIBQjWpjBYENPKFkBlI6cSKlGcXVYx1ltC7KK40ILAzLkxnr7Z3sbgDGxITVBOQr2TUnMcKKN8ObrDQ/Z30WfJkfgDtrLTJTDp3v9989bgpVtqP114yKOSTbU0cnwkwjPaKS2gWJMOXpzWB+XBG98z+VHtiC+jiGXvGQfef86wt6yYsBPgsGMdEhlOEGoyDyhYHyY3tqNjRcLySmwAV0051Tu6rr0z8vtdgd6Tcw+zR2qjeKGw5QZ2ISwsrJE1+neyPEP/VYzbKcEQWBTneLih9fio+aMGVzF9em2C/Mg3DhHEd5veyXFndkgJmhezlveJ70/nY9nmwLrRlRkySAQHpSY=
 
 matrix:
   allow_failures:
   - go: tip
+  fast_finish: true
+
+install:
+- go get github.com/mattn/goveralls
+
+script:
+- ragel --version
+- make coverage
+- goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
