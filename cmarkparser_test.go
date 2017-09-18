@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -26,10 +27,10 @@ type testDocument struct {
 	Children []testNode
 }
 
-func (n *NodeType) UnmarshalJSON(data []byte) error {
+func (n *NodeType) unmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
-		return fmt.Errorf("Type should be a string, got %s", data)
+		return fmt.Errorf("type should be a string, got %s", data)
 	}
 
 	got, ok := nodeTypeMap[s]
@@ -56,40 +57,10 @@ func newDoc(n []testNode) testDocument {
 	}
 }
 
-func (n *testNode) Equal(tn Node) bool {
-	if n.Type != tn.Type {
-		return false
-	}
-	if !bytes.Equal([]byte(n.Content), tn.Content) {
-		return false
-	}
-	if len(n.Children) != len(tn.Children) {
-		return false
-	}
-	for i, c := range n.Children {
-		if !c.Equal(tn.Children[i]) {
-			return false
-		}
-	}
-	return true
-}
-
-func (d *testDocument) Equal(td Document) bool {
-	if len(d.Children) != len(td.Children) {
-		return false
-	}
-	for i, c := range d.Children {
-		if !c.Equal(td.Children[i]) {
-			return false
-		}
-	}
-	return true
-}
-
 func (d *testDocument) String() string {
 	var buffer bytes.Buffer
 	for _, c := range d.Children {
-		buffer.WriteString(fmt.Sprintf("  %s\n", c.String()))
+		buffer.WriteString(fmt.Sprintf("  %s\n", c))
 	}
 	return buffer.String()
 }
@@ -97,15 +68,15 @@ func (d *testDocument) String() string {
 func (n *testNode) String() string {
 	var buffer bytes.Buffer
 	if len(n.Content) > 0 {
-		buffer.WriteString(fmt.Sprintf("[%s] %s", n.Type.String(), string(n.Content)))
+		buffer.WriteString(fmt.Sprintf("[%s] %s", n.Type, string(n.Content)))
 	} else {
-		buffer.WriteString(fmt.Sprintf("[%s]", n.Type.String()))
+		buffer.WriteString(fmt.Sprintf("[%s]", n.Type))
 	}
 	if len(n.Children) > 0 {
 		buffer.WriteString("\n[")
 	}
 	for _, c := range n.Children {
-		buffer.WriteString(fmt.Sprintf("  %s\n", c.String()))
+		buffer.WriteString(fmt.Sprintf("  %s\n", c))
 	}
 	if len(n.Children) > 0 {
 		buffer.WriteString("]")
@@ -148,31 +119,31 @@ var someTests = []testPair{
 		newDoc([]testNode{newNode(Par, "\u2001")}),
 	},
 	// links, for now treated as paragraphs
-	//	{
-	//		"[ana](httpslittrme)",
-	//		true,
-	//		newDoc([]testNode{newNode(Par, "[ana](httpslittrme)")}),
-	//	},
-	//	{
-	//		"[ana](https://littr.me)\n",
-	//		true,
-	//		newDoc([]testNode{newNode(Par, "[ana](https://littr.me)")}),
-	//	},
-	//	{
-	//		"some text before [test 123](https://littr.me)\n",
-	//		true,
-	//		newDoc([]testNode{newNode(Par, "some text before [test 123](https://littr.me)")}),
-	//	},
-	//	{
-	//		"[test 123](https://littr.me) some text after\n",
-	//		true,
-	//		newDoc([]testNode{newNode(Par, "[test 123](https://littr.me) some text after")}),
-	//	},
-	//	{
-	//		"some text before [test 123](https://littr.me) some text after\n",
-	//		true,
-	//		newDoc([]testNode{newNode(Par, "some text before [test 123](https://littr.me) some text after")}),
-	//	},
+	{
+		"[ana](httpslittrme)",
+		true,
+		newDoc([]testNode{newNode(Par, "[ana](httpslittrme)")}),
+	},
+	{
+		"[ana](https://littr.me)\n",
+		true,
+		newDoc([]testNode{newNode(Par, "[ana](https://littr.me)")}),
+	},
+	{
+		"some text before [test 123](https://littr.me)\n",
+		true,
+		newDoc([]testNode{newNode(Par, "some text before [test 123](https://littr.me)")}),
+	},
+	{
+		"[test 123](https://littr.me) some text after\n",
+		true,
+		newDoc([]testNode{newNode(Par, "[test 123](https://littr.me) some text after")}),
+	},
+	{
+		"some text before [test 123](https://littr.me) some text after\n",
+		true,
+		newDoc([]testNode{newNode(Par, "some text before [test 123](https://littr.me) some text after")}),
+	},
 	// utf8 only characters
 	{
 		"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș",
@@ -247,37 +218,6 @@ var trims = func(s string) string {
 	return strings.Trim(s, "\n\r")
 }
 
-func assertDocumentsEqual(d1 testDocument, d2 Document) (bool, error) {
-	if !d1.Equal(d2) {
-		return false, errors.New(fmt.Sprintf("\n____ expected ____\n%s\n______ got  ______\n%s", trims(d1.String()), trims(d2.String())))
-	}
-	d1Children := d1.Children
-	d2Children := d2.Children
-	if len(d1Children) != len(d2Children) {
-		return false, errors.New(fmt.Sprintf(" Children length expected %d != %d", len(d1Children), len(d2Children)))
-	}
-	if len(d1Children) > 0 && len(d2Children) > 0 {
-		//t.Logf("%s", dt.String())
-		for i, n1 := range d1Children {
-			status, err := assertNodesEqual(n1, d2Children[i])
-			if err != nil {
-				return status, err
-			}
-		}
-	}
-	return true, nil
-}
-
-func assertNodesEqual(n1 testNode, n2 Node) (bool, error) {
-	if n1.Type != n2.Type {
-		return false, errors.New(fmt.Sprintf("  Node type expected %q != %q", n1.Type.String(), n2.Type.String()))
-	}
-	if !bytes.Equal([]byte(n1.Content), n2.Content) {
-		return false, errors.New(fmt.Sprintf("  Node content expected %q:%v != %q:%v", trims(n1.Content), n1.Content, trimb(n2.Content), n2.Content))
-	}
-	return true, nil
-}
-
 func TestParse(t *testing.T) {
 
 	var err error
@@ -285,9 +225,11 @@ func TestParse(t *testing.T) {
 	for _, curTest := range someTests {
 		doc, err = Parse([]byte(curTest.text))
 
-		_, err = assertDocumentsEqual(curTest.doc, doc)
-		if err != nil {
-			t.Errorf("\n%s", err)
+		if err != nil && curTest.expected {
+			t.Errorf("Parse failed and success was expected %s\n %s", err, curTest.text)
+		}
+		if reflect.DeepEqual(curTest.doc, doc) {
+			t.Errorf("Expected\n%s\ngot\n%s", curTest.doc, doc)
 		}
 	}
 }
@@ -326,12 +268,10 @@ func get_file_contents(path string) []byte {
 
 func TestWithFiles(t *testing.T) {
 	var tests []string
-	var res []string
 	var err error
 
 	tests, err = load_files(".md")
 
-	log.Printf("testfiles: %v\nresults: %v\n", tests, res)
 	for _, path := range tests {
 		var doc Document
 		var res_doc testDocument
@@ -343,15 +283,14 @@ func TestWithFiles(t *testing.T) {
 		doc, err = Parse(data)
 
 		if err == nil {
-			log.Printf("%q", doc.String())
+			log.Printf("%q", doc)
 		}
 
 		if err != nil {
-			t.Errorf("\n%s", err)
+			t.Errorf("%s", err)
 		}
-		_, err = assertDocumentsEqual(res_doc, doc)
-		if err != nil {
-			t.Errorf("\nFor %s\n%s", path, err)
+		if reflect.DeepEqual(res_doc, doc) {
+			t.Errorf("\n____ expected ____\n%s\n______ got  ______\n%s", doc, res_doc)
 		}
 	}
 }
