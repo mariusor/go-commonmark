@@ -37,9 +37,10 @@ func arr_splice(dst []byte, src []byte, pos int) []byte {
 }
 
 func parse(data []byte) (Document, error) {
+    //t_data = trimb(data)
     cs, p, pe := 0, 0, len(data)
     //ts, te, act := 0, 0, 0
-    //log.Printf("%v", ts)
+    //log.Printf("%s", ts)
     eof := len(data)
 
     var doc Document = Document{}
@@ -50,7 +51,7 @@ func parse(data []byte) (Document, error) {
     var node Node
     var heading_level uint;
     var nodes Nodes;
-    log.Printf("Incoming[%d]: \"%#s\"\n", len(data), data)
+    log.Printf("Incoming[%d]: \"%s\"\n", len(data), data)
 
     var mark int
     var thematic_break_symbol byte

@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -39,8 +38,12 @@ func (n *NodeType) unmarshalJSON(data []byte) error {
 	return nil
 }
 
-func newNode(t NodeType, s string) Node {
-	return Node{Type: t, Content: []byte(s)}
+func newNode(t NodeType, s string, c Nodes) Node {
+	r := Node{Type: t, Content: []byte(s)}
+	if len(c) > 0 {
+		r.Children = c
+	}
+	return r
 }
 
 func newDoc(n Nodes) Document {
@@ -59,129 +62,120 @@ var someTests = tests{
 	"line": {
 		"some text",
 		true,
-		newDoc(Nodes{newNode(Par, "some text")}),
+		newDoc(Nodes{newNode(Par, "some text", nil)}),
 	},
 	// null char
 	"null_char": {
 		"\x00",
 		true,
-		newDoc(Nodes{newNode(Par, "\ufffd")}),
+		newDoc(Nodes{newNode(Par, "\ufffd", nil)}),
 	},
 	// spaces
 	"space#1": {
 		"\uc2a0",
 		true,
-		newDoc(Nodes{newNode(Par, "\uc2a0")}),
+		newDoc(Nodes{newNode(Par, "\uc2a0", nil)}),
 	},
 	"space#2": {
 		"\u2000",
 		true,
-		newDoc(Nodes{newNode(Par, "\u2000")}),
+		newDoc(Nodes{newNode(Par, "\u2000", nil)}),
 	},
 	"space#3": {
 		"\u2001",
 		true,
-		newDoc(Nodes{newNode(Par, "\u2001")}),
+		newDoc(Nodes{newNode(Par, "\u2001", nil)}),
 	},
-	/*/
 	// links, for now treated as paragraphs
 	"link#1": {
 		"[ana](httpslittrme)",
 		true,
-		newDoc(Nodes{newNode(Par, "[ana](httpslittrme)")}),
+		newDoc(Nodes{newNode(Par, "[ana](httpslittrme)", nil)}),
 	},
 	"link#2": {
 		"[ana](https://littr.me)\n",
 		true,
-		newDoc(Nodes{newNode(Par, "[ana](https://littr.me)")}),
+		newDoc(Nodes{newNode(Par, "[ana](https://littr.me)\n", nil)}),
 	},
 	"link_after_text": {
 		"some text before [test 123](https://littr.me)\n",
 		true,
-		newDoc(Nodes{newNode(Par, "some text before [test 123](https://littr.me)")}),
+		newDoc(Nodes{newNode(Par, "some text before [test 123](https://littr.me)\n", nil)}),
 	},
 	"link_before_text": {
 		"[test 123](https://littr.me) some text after\n",
 		true,
-		newDoc(Nodes{newNode(Par, "[test 123](https://littr.me) some text after")}),
+		newDoc(Nodes{newNode(Par, "[test 123](https://littr.me) some text after\n", nil)}),
 	},
 	"link_inside_text": {
 		"some text before [test 123](https://littr.me) some text after\n",
 		true,
-		newDoc(Nodes{newNode(Par, "some text before [test 123](https://littr.me) some text after")}),
+		newDoc(Nodes{newNode(Par, "some text before [test 123](https://littr.me) some text after\n", nil)}),
 	},
-	/**/
 	// utf8 only characters
 	"utf8#1": {
 		"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș",
 		true,
-		newDoc(Nodes{newNode(Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș")}),
+		newDoc(Nodes{newNode(Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș", nil)}),
 	},
 	// thematic breaks
 	"break#1:-": {
 		" ---\n",
 		true,
-		newDoc(Nodes{newNode(TBreak, "-")}),
+		newDoc(Nodes{newNode(TBreak, "-", nil)}),
 	},
 	"break#2:*": {
 		"  ***\n",
 		true,
-		newDoc(Nodes{newNode(TBreak, "*")}),
+		newDoc(Nodes{newNode(TBreak, "*", nil)}),
 	},
 	"break#3:*": {
 		"  * * * *\n",
 		true,
-		newDoc(Nodes{newNode(TBreak, "*")}),
+		newDoc(Nodes{newNode(TBreak, "*", nil)}),
 	},
 	"break#4:-": {
 		"   ___\r",
 		true,
-		newDoc(Nodes{newNode(TBreak, "_")}),
+		newDoc(Nodes{newNode(TBreak, "_", nil)}),
 	},
 	// misleading thematic break
 	"not_a_break": {
 		"   _*-*__",
 		true,
-		newDoc(Nodes{newNode(Par, "   _*-*__")}),
+		newDoc(Nodes{newNode(Par, "   _*-*__", nil)}),
 	},
 	// headings
 	"h1": {
 		" # ana are mere\n",
 		true,
-		newDoc(Nodes{newNode(H1, "ana are mere")}),
+		newDoc(Nodes{newNode(H1, "ana are mere", nil)}),
 	},
 	"h2": {
 		"## ana are mere\n",
 		true,
-		newDoc(Nodes{newNode(H2, "ana are mere")}),
+		newDoc(Nodes{newNode(H2, "ana are mere", nil)}),
 	},
 	"h3": {
 		"  ### ana are mere\n",
 		true,
-		newDoc(Nodes{newNode(H3, "ana are mere")}),
+		newDoc(Nodes{newNode(H3, "ana are mere", nil)}),
 	},
 	"h4": {
 		"#### ana are mere\n",
 		true,
-		newDoc(Nodes{newNode(H4, "ana are mere")}),
+		newDoc(Nodes{newNode(H4, "ana are mere", nil)}),
 	},
 	"h5": {
 		"   #####  ana-are-mere\n",
 		true,
-		newDoc(Nodes{newNode(H5, "ana-are-mere")}),
+		newDoc(Nodes{newNode(H5, "ana-are-mere", nil)}),
 	},
 	"h6": {
 		" ###### ana-are-mere\n",
 		true,
-		newDoc(Nodes{newNode(H6, "ana-are-mere")}),
+		newDoc(Nodes{newNode(H6, "ana-are-mere", nil)}),
 	},
-}
-
-var trimb = func(s []byte) string {
-	return strings.Trim(string(s), "\n\r")
-}
-var trims = func(s string) string {
-	return strings.Trim(s, "\n\r")
 }
 
 func TestParse(t *testing.T) {
@@ -196,7 +190,7 @@ func TestParse(t *testing.T) {
 			t.Errorf("Parse failed and success was expected %s\n %s", err, curTest.text)
 		}
 		if !reflect.DeepEqual(curTest.doc, doc) {
-			t.Errorf("\n___\n%s\n___\n%s\n___", curTest.doc, doc)
+			t.Errorf("\n%s\n___\n%s", curTest.doc, doc)
 		}
 	}
 }
@@ -233,7 +227,7 @@ func get_file_contents(path string) []byte {
 	return data
 }
 
-func testWithFiles(t *testing.T) {
+func estWithFiles(t *testing.T) {
 	var tests []string
 	var err error
 
@@ -257,7 +251,7 @@ func testWithFiles(t *testing.T) {
 			t.Errorf("%s", err)
 		}
 		if !reflect.DeepEqual(res_doc, doc) {
-			t.Errorf("\n___\n%s\n___\n%s\n___", doc, res_doc)
+			t.Errorf("\n%s\n___\n%s", doc, res_doc)
 		}
 
 		t.Logf("%s", res_doc)

@@ -2,6 +2,7 @@ package cmarkparser
 
 import (
 	"fmt"
+	"strings"
 )
 
 func NewInlineText(cont []byte) Node {
@@ -56,7 +57,7 @@ func NewHeading(level uint, content []byte) Node {
 }
 
 func (n *Node) Empty() bool {
-	return n.Type == None
+	return n.Type == None /*|| len(n.Content) == 0*/
 }
 
 func (d *Document) String() string {
@@ -109,6 +110,13 @@ var nodeTypeMap = map[string]NodeType{
 	"h6":  H6,
 	"par": Par,
 	"tbr": TBreak,
+}
+
+var trimb = func(s []byte) []byte {
+	return []byte(strings.Trim(string(s), "\n\r "))
+}
+var trims = func(s string) string {
+	return strings.Trim(s, "\n\r ")
 }
 
 func getNodeType(s string) NodeType {
