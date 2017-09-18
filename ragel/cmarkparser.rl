@@ -23,7 +23,7 @@ func Parse (data []byte) (Document, error) {
 %% write data;
 
 func arr_splice(dst []byte, src []byte, pos int) []byte {
-    var ret = make([]byte, 0)
+	var ret = make([]byte, 0)
 	for _, a := range dst[:pos] {
 		ret = append (ret, a)
 	}
@@ -33,30 +33,31 @@ func arr_splice(dst []byte, src []byte, pos int) []byte {
 	for _, c := range dst[pos+1:]{
 		ret = append (ret, c)
 	}
-    return ret
+	return ret
 }
 
 func parse(data []byte) (Document, error) {
     cs, p, pe := 0, 0, len(data)
     //ts, te, act := 0, 0, 0
+    //log.Printf("%v", ts)
     eof := len(data)
 
-    var doc Document = Document{Children: []Node{Node{}}}
+    var doc Document = Document{}
     if pe == 0 {
         return doc, errors.New("Empty document")
     }
 
     var node Node
     var heading_level uint;
-    var nodes []Node;
-    log.Printf("Incoming: %#v - len %d\n", data, len(data))
+    var nodes Nodes;
+    log.Printf("Incoming[%d]: \"%#s\"\n", len(data), data)
 
     var mark int
     var thematic_break_symbol byte
 
     %%{
         action emit_eof {
-            log.Printf("%#v\n", nodes)
+            log.Printf("%s\n", nodes)
             doc.Children = nodes
             log.Printf("eof:%d:%d\n", p, eof)
         }
@@ -64,7 +65,7 @@ func parse(data []byte) (Document, error) {
         action emit_add_block {
             if !node.Empty() {
                 nodes = append(nodes, node)
-                log.Printf("appending node: %q\n", node.String())
+                log.Printf("appending node: %s\n", node)
                 node = Node{}
             }
             
@@ -72,12 +73,11 @@ func parse(data []byte) (Document, error) {
         single_line_doc = (any)+ >mark %emit_add_line;
         document = ((block %emit_add_block)* | (single_line_doc %emit_add_block));
 
-        #main := |* 
+        #main := |*
         #    block => emit_add_block;
-        #    line => emit_new_line;
+        #    line => emit_add_line;
         #*|;
-        
-        
+
         main := document %eof emit_eof;
  
         write init;

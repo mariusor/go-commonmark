@@ -18,14 +18,12 @@ import (
 type testPair struct {
 	text     string
 	expected bool
-	doc      testDocument
+	doc      Document
 }
 
-var emptyDoc = newDoc([]testNode{testNode{}}) //Document = Document{}
+type tests map[string]testPair
 
-type testDocument struct {
-	Children []testNode
-}
+var emptyDoc = Document{}
 
 func (n *NodeType) unmarshalJSON(data []byte) error {
 	var s string
@@ -41,173 +39,141 @@ func (n *NodeType) unmarshalJSON(data []byte) error {
 	return nil
 }
 
-type testNode struct {
-	Type     NodeType
-	Content  string
-	Children []testNode `json:",omitempty"`
+func newNode(t NodeType, s string) Node {
+	return Node{Type: t, Content: []byte(s)}
 }
 
-func newNode(t NodeType, s string) testNode {
-	return testNode{Type: t, Content: s}
-}
-
-func newDoc(n []testNode) testDocument {
-	return testDocument{
+func newDoc(n Nodes) Document {
+	return Document{
 		Children: n,
 	}
 }
 
-func (d *testDocument) String() string {
-	var buffer bytes.Buffer
-	for _, c := range d.Children {
-		buffer.WriteString(fmt.Sprintf("  %s\n", c))
-	}
-	return buffer.String()
-}
-
-func (n *testNode) String() string {
-	var buffer bytes.Buffer
-	if len(n.Content) > 0 {
-		buffer.WriteString(fmt.Sprintf("[%s] %s", n.Type, string(n.Content)))
-	} else {
-		buffer.WriteString(fmt.Sprintf("[%s]", n.Type))
-	}
-	if len(n.Children) > 0 {
-		buffer.WriteString("\n[")
-	}
-	for _, c := range n.Children {
-		buffer.WriteString(fmt.Sprintf("  %s\n", c))
-	}
-	if len(n.Children) > 0 {
-		buffer.WriteString("]")
-	}
-	return buffer.String()
-}
-
-var someTests = []testPair{
+var someTests = tests{
 	// empty doc
-	{
+	"empty": {
 		"",
 		false,
 		emptyDoc,
 	},
-	{
+	"line": {
 		"some text",
 		true,
-		newDoc([]testNode{newNode(Par, "some text")}),
+		newDoc(Nodes{newNode(Par, "some text")}),
 	},
 	// null char
-	{
+	"null_char": {
 		"\x00",
 		true,
-		newDoc([]testNode{newNode(Par, "\ufffd")}),
+		newDoc(Nodes{newNode(Par, "\ufffd")}),
 	},
 	// spaces
-	{
+	"space#1": {
 		"\uc2a0",
 		true,
-		newDoc([]testNode{newNode(Par, "\uc2a0")}),
+		newDoc(Nodes{newNode(Par, "\uc2a0")}),
 	},
-	{
+	"space#2": {
 		"\u2000",
 		true,
-		newDoc([]testNode{newNode(Par, "\u2000")}),
+		newDoc(Nodes{newNode(Par, "\u2000")}),
 	},
-	{
+	"space#3": {
 		"\u2001",
 		true,
-		newDoc([]testNode{newNode(Par, "\u2001")}),
+		newDoc(Nodes{newNode(Par, "\u2001")}),
 	},
+	/*/
 	// links, for now treated as paragraphs
-	{
+	"link#1": {
 		"[ana](httpslittrme)",
 		true,
-		newDoc([]testNode{newNode(Par, "[ana](httpslittrme)")}),
+		newDoc(Nodes{newNode(Par, "[ana](httpslittrme)")}),
 	},
-	{
+	"link#2": {
 		"[ana](https://littr.me)\n",
 		true,
-		newDoc([]testNode{newNode(Par, "[ana](https://littr.me)")}),
+		newDoc(Nodes{newNode(Par, "[ana](https://littr.me)")}),
 	},
-	{
+	"link_after_text": {
 		"some text before [test 123](https://littr.me)\n",
 		true,
-		newDoc([]testNode{newNode(Par, "some text before [test 123](https://littr.me)")}),
+		newDoc(Nodes{newNode(Par, "some text before [test 123](https://littr.me)")}),
 	},
-	{
+	"link_before_text": {
 		"[test 123](https://littr.me) some text after\n",
 		true,
-		newDoc([]testNode{newNode(Par, "[test 123](https://littr.me) some text after")}),
+		newDoc(Nodes{newNode(Par, "[test 123](https://littr.me) some text after")}),
 	},
-	{
+	"link_inside_text": {
 		"some text before [test 123](https://littr.me) some text after\n",
 		true,
-		newDoc([]testNode{newNode(Par, "some text before [test 123](https://littr.me) some text after")}),
+		newDoc(Nodes{newNode(Par, "some text before [test 123](https://littr.me) some text after")}),
 	},
+	/**/
 	// utf8 only characters
-	{
+	"utf8#1": {
 		"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș",
 		true,
-		newDoc([]testNode{newNode(Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș")}),
+		newDoc(Nodes{newNode(Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș")}),
 	},
 	// thematic breaks
-	{
+	"break#1:-": {
 		" ---\n",
 		true,
-		newDoc([]testNode{newNode(TBreak, "-")}),
+		newDoc(Nodes{newNode(TBreak, "-")}),
 	},
-	{
+	"break#2:*": {
 		"  ***\n",
 		true,
-		newDoc([]testNode{newNode(TBreak, "*")}),
+		newDoc(Nodes{newNode(TBreak, "*")}),
 	},
-	{
+	"break#3:*": {
 		"  * * * *\n",
 		true,
-		newDoc([]testNode{newNode(TBreak, "*")}),
+		newDoc(Nodes{newNode(TBreak, "*")}),
 	},
-	{
+	"break#4:-": {
 		"   ___\r",
 		true,
-		newDoc([]testNode{newNode(TBreak, "_")}),
+		newDoc(Nodes{newNode(TBreak, "_")}),
 	},
 	// misleading thematic break
-	{
+	"not_a_break": {
 		"   _*-*__",
 		true,
-		newDoc([]testNode{newNode(Par, "   _*-*__")}),
+		newDoc(Nodes{newNode(Par, "   _*-*__")}),
 	},
 	// headings
-	{
+	"h1": {
 		" # ana are mere\n",
 		true,
-		newDoc([]testNode{newNode(H1, "ana are mere")}),
+		newDoc(Nodes{newNode(H1, "ana are mere")}),
 	},
-	{
+	"h2": {
 		"## ana are mere\n",
 		true,
-		newDoc([]testNode{newNode(H2, "ana are mere")}),
+		newDoc(Nodes{newNode(H2, "ana are mere")}),
 	},
-
-	{
+	"h3": {
 		"  ### ana are mere\n",
 		true,
-		newDoc([]testNode{newNode(H3, "ana are mere")}),
+		newDoc(Nodes{newNode(H3, "ana are mere")}),
 	},
-	{
+	"h4": {
 		"#### ana are mere\n",
 		true,
-		newDoc([]testNode{newNode(H4, "ana are mere")}),
+		newDoc(Nodes{newNode(H4, "ana are mere")}),
 	},
-	{
+	"h5": {
 		"   #####  ana-are-mere\n",
 		true,
-		newDoc([]testNode{newNode(H5, "ana-are-mere")}),
+		newDoc(Nodes{newNode(H5, "ana-are-mere")}),
 	},
-	{
+	"h6": {
 		" ###### ana-are-mere\n",
 		true,
-		newDoc([]testNode{newNode(H6, "ana-are-mere")}),
+		newDoc(Nodes{newNode(H6, "ana-are-mere")}),
 	},
 }
 
@@ -222,14 +188,15 @@ func TestParse(t *testing.T) {
 
 	var err error
 	var doc Document
-	for _, curTest := range someTests {
+	for k, curTest := range someTests {
+		t.Logf("Testing: %s", k)
 		doc, err = Parse([]byte(curTest.text))
 
 		if err != nil && curTest.expected {
 			t.Errorf("Parse failed and success was expected %s\n %s", err, curTest.text)
 		}
-		if reflect.DeepEqual(curTest.doc, doc) {
-			t.Errorf("Expected\n%s\ngot\n%s", curTest.doc, doc)
+		if !reflect.DeepEqual(curTest.doc, doc) {
+			t.Errorf("\n___\n%s\n___\n%s\n___", curTest.doc, doc)
 		}
 	}
 }
@@ -266,7 +233,7 @@ func get_file_contents(path string) []byte {
 	return data
 }
 
-func TestWithFiles(t *testing.T) {
+func testWithFiles(t *testing.T) {
 	var tests []string
 	var err error
 
@@ -274,9 +241,9 @@ func TestWithFiles(t *testing.T) {
 
 	for _, path := range tests {
 		var doc Document
-		var res_doc testDocument
+		var res_doc Document
 		data := get_file_contents(path)
-		log.Printf("%s:%s", path, path[:len(path)-3])
+		t.Logf("Testing: %s", path)
 		res_path := fmt.Sprintf("%s.json", path[:len(path)-3])
 		json.Unmarshal(get_file_contents(res_path), &res_doc)
 
@@ -289,9 +256,11 @@ func TestWithFiles(t *testing.T) {
 		if err != nil {
 			t.Errorf("%s", err)
 		}
-		if reflect.DeepEqual(res_doc, doc) {
-			t.Errorf("\n____ expected ____\n%s\n______ got  ______\n%s", doc, res_doc)
+		if !reflect.DeepEqual(res_doc, doc) {
+			t.Errorf("\n___\n%s\n___\n%s\n___", doc, res_doc)
 		}
+
+		t.Logf("%s", res_doc)
 	}
 }
 
