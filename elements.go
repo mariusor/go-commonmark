@@ -1,7 +1,6 @@
 package cmarkparser
 
 import (
-	"bytes"
 	"fmt"
 )
 
@@ -61,30 +60,25 @@ func (n *Node) Empty() bool {
 }
 
 func (d *Document) String() string {
-	var buffer bytes.Buffer
-	for _, c := range d.Children {
-		buffer.WriteString(fmt.Sprintf("  %s\n", c.String()))
-	}
-	return buffer.String()
+	var r string = fmt.Sprintf("Document:{{\n%s\n}}", d.Children)
+	return r
 }
 
 func (n *Node) String() string {
-	var buffer bytes.Buffer
+	var r string
 	if len(n.Content) > 0 {
-		buffer.WriteString(fmt.Sprintf("[%s] %s", n.Type.String(), string(n.Content)))
+		r += fmt.Sprintf("[%s] %s", n.Type, n.Content)
 	} else {
-		buffer.WriteString(fmt.Sprintf("[%s]", n.Type.String()))
+		r += fmt.Sprintf("[%s]", n.Type)
 	}
 	if len(n.Children) > 0 {
-		buffer.WriteString("\n[")
+		r += "\nChildren Nodes ["
+		for _, c := range n.Children {
+			r += fmt.Sprintf("  %s\n", c)
+		}
+		r += "]"
 	}
-	for _, c := range n.Children {
-		buffer.WriteString(fmt.Sprintf("  %s\n", c.String()))
-	}
-	if len(n.Children) > 0 {
-		buffer.WriteString("]")
-	}
-	return buffer.String()
+	return r
 }
 
 type NodeType uint8
@@ -121,19 +115,19 @@ func getNodeType(s string) NodeType {
 	return nodeTypeMap[s]
 }
 
-func (nt *NodeType) String() string {
+func (n *NodeType) String() string {
 	for key, node := range nodeTypeMap {
-		if node == *nt {
+		if node == *n {
 			return key
 		}
 	}
-	return "[nil]"
+	return "_nil"
 }
 
 func (n *Nodes) String() string {
 	var s string
 	for k, v := range []Node(*n) {
-		s += fmt.Sprintf("{%s}\n%s", k, v)
+		s += fmt.Sprintf("Node{%d}\n%s", k, v)
 	}
 	return s
 }
@@ -143,10 +137,10 @@ type Document struct {
 }
 
 type Node struct {
-	Type       NodeType
-	Content    []byte
-	Children   Nodes
-	Attributes Attributes
+	Type     NodeType
+	Content  []byte
+	Children Nodes
+	//Attributes Attributes
 }
 
 type (
