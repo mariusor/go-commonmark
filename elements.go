@@ -60,36 +60,6 @@ func (n *Node) Empty() bool {
 	return n.Type == None
 }
 
-func (n *Node) Equal(tn Node) bool {
-	if n.Type != tn.Type {
-		return false
-	}
-	if !bytes.Equal(n.Content, tn.Content) {
-		return false
-	}
-	if len(n.Children) != len(tn.Children) {
-		return false
-	}
-	for i, c := range n.Children {
-		if !c.Equal(tn.Children[i]) {
-			return false
-		}
-	}
-	return true
-}
-
-func (d *Document) Equal(td Document) bool {
-	if len(d.Children) != len(td.Children) {
-		return false
-	}
-	for i, c := range d.Children {
-		if !c.Equal(td.Children[i]) {
-			return false
-		}
-	}
-	return true
-}
-
 func (d *Document) String() string {
 	var buffer bytes.Buffer
 	for _, c := range d.Children {
@@ -157,16 +127,29 @@ func (nt *NodeType) String() string {
 			return key
 		}
 	}
-	return "nil"
+	return "[nil]"
+}
+
+func (n *Nodes) String() string {
+	var s string
+	for k, v := range []Node(*n) {
+		s += fmt.Sprintf("{%s}\n%s", k, v)
+	}
+	return s
 }
 
 type Document struct {
-	Children []Node
+	Children Nodes
 }
 
 type Node struct {
-	Type     NodeType
-	Content  []byte
-	Children []Node
-	//Attributes map[string]string
+	Type       NodeType
+	Content    []byte
+	Children   Nodes
+	Attributes Attributes
 }
+
+type (
+	Nodes      []Node
+	Attributes map[string]string
+)
