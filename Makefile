@@ -5,7 +5,10 @@ RAGEL_COMPILE := ragel -Z -G2
 RAGEL_DOT := ragel -V -p
 
 test: cmarkparser.go
-	$(TEST) -v ./... -args quiet 
+	$(TEST) -v ./... -args quiet
+
+coverage: cmarkparser.go
+	$(TEST) -v -covermode=count -coverprofile=coverage.out ./... -args quiet
 
 cmarkparser.go: ./ragel/*.rl
 	$(RAGEL_COMPILE) -o cmarkparser.go ./ragel/cmarkparser.rl
