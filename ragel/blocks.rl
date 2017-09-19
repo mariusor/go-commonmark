@@ -3,7 +3,7 @@
 // Commonmark block definitions
 // Copyright (c) 2017 Marius Orcsik <marius@habarnam.ro>
 // MIT License
-// 
+//
 
 %%{
 machine blocks;

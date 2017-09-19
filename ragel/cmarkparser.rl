@@ -3,7 +3,7 @@
 // Commonmark parser
 // Copyright (c) 2017 Marius Orcsik <marius@habarnam.ro>
 // MIT License
-// 
+//
 
 package cmarkparser
 
