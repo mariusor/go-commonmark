@@ -1,7 +1,7 @@
 // -*-go-*-
 //
-// Commonmark parser
-// Copyright (c) 2017 Marius Orcisk <marius@habarnam.ro>
+// Commonmark thematic breaks
+// Copyright (c) 2017 Marius Orcsik <marius@habarnam.ro>
 // MIT License
 // 
 
