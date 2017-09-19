@@ -1,7 +1,7 @@
 // -*-go-*-
 //
-// Commonmark link parser
-// Copyright (c) 2017 Marius Orcisk <marius@habarnam.ro>
+// Commonmark block definitions
+// Copyright (c) 2017 Marius Orcsik <marius@habarnam.ro>
 // MIT License
 // 
 
