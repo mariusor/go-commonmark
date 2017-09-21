@@ -46,7 +46,7 @@ action replace_insecure_char
 }
 
 action mark {
-    log.Printf("cur: %d\n", p)
+    log.Printf("mark(%d)", p)
     mark = p
 }
 
@@ -54,14 +54,14 @@ action emit_add_line {
 //    if !node.Empty() {
 //        node.Children = append(node.Children, NewInlineText(data[mark:p]))
 //    }
-    if node.Empty() {
-        node = NewParagraph(data[mark:p])
-    }
-    log.Printf("nl: %d\ncurnode %q", p, node.String())
+//    if node.Empty() {
+//        node = NewParagraph(data[mark:p])
+//    }
+    log.Printf("emit_new_line(%d)", p)
 }
 
 action emit_add_paragraph {
-    log.Printf("eop: %d\n", p)
+    log.Printf("emit_new_paragraph(%d)", p)
 }
 
 replacement = 0xef 0xbf 0xbd;
@@ -93,7 +93,7 @@ utf8_char = (0x01..0x1f | 0x7f)                             %non_printable_ascii
 
 # LF and CR characters
 eol = ((0x0d? 0x0a) | 0x0d) >emit_add_line;
-eop = eol{2} >emit_add_paragraph;
+eop = eol{2,} >emit_add_paragraph;
 
 # UTF-8 white space characters
 utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-space 

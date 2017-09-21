@@ -58,9 +58,19 @@ func parse(data []byte) (Document, error) {
 
     %%{
         action emit_eof {
-            log.Printf("%s\n", nodes)
-            doc.Children = nodes
-            log.Printf("eof:%d:%d\n", p, eof)
+            log.Printf("current node: %s", node)
+            if node.Empty() {
+                node = NewParagraph(data[:p])
+                log.Printf("current node: %s\n", node)
+            }
+            if len(nodes) == 0 {
+                nodes = append(nodes, node)
+            }
+            if len(nodes) > 0 {
+                log.Printf("%s\n", nodes)
+                doc.Children = nodes
+            }
+            log.Printf("emit_end_of_file:(%d)", eof)
         }
 
         action emit_add_block {
@@ -69,18 +79,18 @@ func parse(data []byte) (Document, error) {
                 log.Printf("appending node: %s\n", node)
                 node = Node{}
             }
-            
+
         }
-        single_line_doc = (any)+ >mark %emit_add_line;
+        single_line_doc = (^eol)+ >mark eol? >emit_add_line;
         document = ((block %emit_add_block)* | (single_line_doc %emit_add_block));
 
         #main := |*
         #    block => emit_add_block;
-        #    line => emit_add_line;
+        #    single_line_doc => emit_add_line;
         #*|;
 
         main := document %eof emit_eof;
- 
+
         write init;
         write exec;
     }%%

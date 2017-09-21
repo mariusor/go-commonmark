@@ -15,7 +15,7 @@ action save_break_symbol {
 
 action emit_thematic_break 
 {
-    log.Printf("th-br:%s\n", thematic_break_symbol);
+    log.Printf("th-br:%s\n", string(thematic_break_symbol));
     node = NewThematicBreak(thematic_break_symbol)
 }
 
