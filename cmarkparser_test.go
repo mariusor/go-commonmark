@@ -24,32 +24,12 @@ type tests map[string]testPair
 
 var emptyDoc = Document{}
 
-func (n *NodeType) unmarshalJSON(data []byte) error {
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return fmt.Errorf("type should be a string, got %s", data)
-	}
-
-	got, ok := nodeTypeMap[s]
-	if !ok {
-		return fmt.Errorf("invalid NodeType %q", s)
-	}
-	*n = got
-	return nil
-}
-
 func newNode(t NodeType, s string, c Nodes) Node {
-	r := Node{Type: t, Content: []byte(s)}
-	if len(c) > 0 {
-		r.Children = c
-	}
-	return r
+	return Node{Type: t, Content: []byte(s), Children: c}
 }
 
 func newDoc(n Nodes) Document {
-	return Document{
-		Children: n,
-	}
+	return Document{Children: n}
 }
 
 var someTests = tests{
@@ -179,7 +159,6 @@ var someTests = tests{
 }
 
 func TestParse(t *testing.T) {
-
 	var err error
 	var doc Document
 	for k, curTest := range someTests {
@@ -188,9 +167,11 @@ func TestParse(t *testing.T) {
 
 		if err != nil && curTest.expected {
 			t.Errorf("Parse failed and success was expected %s\n %s", err, curTest.text)
+			return
 		}
 		if !reflect.DeepEqual(curTest.doc, doc) {
-			t.Errorf("\n%s\n___\n%s", curTest.doc, doc)
+			t.Errorf("\n%s_________________\n%s", curTest.doc, doc)
+			return
 		}
 	}
 }
@@ -227,7 +208,42 @@ func get_file_contents(path string) []byte {
 	return data
 }
 
-func estWithFiles(t *testing.T) {
+type testDoc struct {
+	Children []testNode
+}
+
+type testNode struct {
+	Type     string
+	Content  []string
+	Children []testNode
+}
+
+func (t *testDoc) Document() Document {
+	d := Document{}
+	for _, v := range t.Children {
+		d.Children = append(d.Children, *v.Node())
+	}
+	return d
+}
+
+func (t *testNode) Node() *Node {
+	n := Node{}
+	for _, v := range t.Children {
+		n.Children = append(n.Children, *v.Node())
+	}
+	for k, s := range t.Content {
+		if k > 0 {
+			n.Content = append(n.Content, byte('\n'))
+		}
+		for _, b := range s {
+			n.Content = append(n.Content, byte(b))
+		}
+	}
+	n.Type = getNodeType(t.Type)
+	return &n
+}
+
+func testWithFiles(t *testing.T) {
 	var tests []string
 	var err error
 
@@ -235,26 +251,27 @@ func estWithFiles(t *testing.T) {
 
 	for _, path := range tests {
 		var doc Document
-		var res_doc Document
+		var t_doc testDoc
 		data := get_file_contents(path)
 		t.Logf("Testing: %s", path)
 		res_path := fmt.Sprintf("%s.json", path[:len(path)-3])
-		json.Unmarshal(get_file_contents(res_path), &res_doc)
+		json.Unmarshal(get_file_contents(res_path), &t_doc)
 
+		res_doc := t_doc.Document()
 		doc, err = Parse(data)
 
-		if err == nil {
-			log.Printf("%q", doc)
-		}
+		//if err == nil {
+		//	log.Printf("%s", doc)
+		//}
 
 		if err != nil {
 			t.Errorf("%s", err)
 		}
 		if !reflect.DeepEqual(res_doc, doc) {
-			t.Errorf("\n%s\n___\n%s", doc, res_doc)
-		}
-
-		t.Logf("%s", res_doc)
+			t.Errorf("\n%s_________________\n%s", doc, res_doc)
+		} /*else {
+			t.Logf("%s", res_doc)
+		}*/
 	}
 }
 
@@ -269,5 +286,6 @@ func TestMain(m *testing.M) {
 	}(os.Args, "quiet") {
 		log.SetOutput(ioutil.Discard)
 	}
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	os.Exit(m.Run())
 }
