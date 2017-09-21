@@ -60,15 +60,15 @@ func (n *Node) Empty() bool {
 	return n.Type == None /*|| len(n.Content) == 0*/
 }
 
-func (d *Document) String() string {
-	var r string = fmt.Sprintf("Document:{{\n%s\n}}", d.Children)
+func (d Document) String() string {
+	var r string = fmt.Sprintf("Document:{%s}\n", d.Children)
 	return r
 }
 
-func (n *Node) String() string {
+func (n Node) String() string {
 	var r string
 	if len(n.Content) > 0 {
-		r += fmt.Sprintf("[%s] %s", n.Type, n.Content)
+		r += fmt.Sprintf("[%s] \"%s\"", n.Type, n.Content)
 	} else {
 		r += fmt.Sprintf("[%s]", n.Type)
 	}
@@ -123,20 +123,22 @@ func getNodeType(s string) NodeType {
 	return nodeTypeMap[s]
 }
 
-func (n *NodeType) String() string {
+func (n NodeType) String() string {
 	for key, node := range nodeTypeMap {
-		if node == *n {
+		if node == n {
 			return key
 		}
 	}
 	return "_nil"
 }
 
-func (n *Nodes) String() string {
+func (n Nodes) String() string {
 	var s string
-	for k, v := range []Node(*n) {
-		s += fmt.Sprintf("Node{%d}\n%s", k, v)
+	s += "{\n"
+	for k, v := range n {
+		s += fmt.Sprintf("\tNode{%d}: %s\n", k, v)
 	}
+	s += "}"
 	return s
 }
 
