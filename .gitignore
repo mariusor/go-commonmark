@@ -1,3 +1,4 @@
-cmarkparser.go
+src/parser/parser_internal.go
+*.dot
 .idea/
-coverage.out
+coverage*.out

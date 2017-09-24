@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"bytes"
 )
 
 var stopOnFailure = false
@@ -42,12 +43,12 @@ func TestNewDocument(t *testing.T) {
 	}
 }
 
-func TestNewEmptyNode(t *testing.T) {
+func TestNewNode(t *testing.T) {
 	err_f := t.Errorf
 	if stopOnFailure {
 		err_f = t.Fatalf
 	}
-	e := NewEmptyNode()
+	e := NewNode()
 
 	if e.Type != None {
 		err_f("Invalid node type %s", e.Type)
@@ -140,7 +141,7 @@ func TestNode_Empty(t *testing.T) {
 	if stopOnFailure {
 		err_f = t.Fatalf
 	}
-	d := NewEmptyNode()
+	d := NewNode()
 
 	if d.Type != None {
 		err_f("Invalid node type %s", d.Type)
@@ -166,7 +167,7 @@ func TestDocument_String(t *testing.T) {
 	}
 
 	e := NewDocument()
-	e_s := "Document:{{\n}}\n"
+	e_s := "Document{{\n}}\n"
 	if e_s != e.String() {
 		err_f("Empty document string invalid: \n%s\n%s", e.String(), e_s)
 	}
@@ -177,7 +178,7 @@ func TestNode_String(t *testing.T) {
 	if stopOnFailure {
 		err_f = t.Fatalf
 	}
-	e := NewEmptyNode()
+	e := NewNode()
 	e_s := "[nil]"
 
 	if e.String() != e_s {
@@ -191,7 +192,7 @@ func TestNodes_String(t *testing.T) {
 		err_f = t.Fatalf
 	}
 
-	e := NewEmptyNode()
+	e := NewNode()
 	n := Nodes{e}
 	n_s := fmt.Sprintf("{\n\tNode{0}: %s\n}", e)
 	if n_s != n.String() {
@@ -210,7 +211,124 @@ func TestNodeType_String(t *testing.T) {
 			err_f("Node type string invalid: \n%s\n%s", nt.String(), nt_s)
 		}
 	}
+}
 
+func TestNodes_Empty(t *testing.T) {
+	err_f := t.Errorf
+	if stopOnFailure {
+		err_f = t.Fatalf
+	}
+
+	ns := Nodes{}
+	if !ns.Empty() {
+		err_f("Nodes should be empty")
+	}
+}
+
+func TestGetNodeType(t *testing.T) {
+	err_f := t.Errorf
+	if stopOnFailure {
+		err_f = t.Fatalf
+	}
+
+	if t := NewNode().Type; GetNodeType(t.String()) != None {
+		err_f("Node should have type '%s', received '%s'", None, t)
+	}
+
+	if t := NewInlineText([]byte{}).Type; GetNodeType(t.String()) != InlineText {
+		err_f("Node should have type '%s', received '%s'", InlineText, t)
+	}
+
+	if t := NewParagraph([]byte{}).Type; GetNodeType(t.String()) != Par {
+		err_f("Node should have type '%s', received '%s'", Par, t)
+	}
+
+	if t := NewThematicBreak(byte('-')).Type; GetNodeType(t.String()) != TBreak {
+		err_f("Node should have type '%s', received '%s'", TBreak, t)
+	}
+
+	if t := NewHeading(1, []byte{}).Type; GetNodeType(t.String()) != H1 {
+		err_f("Node should have type '%s', received '%s'", H1, t)
+	}
+}
+
+func TestNode_AddNodes(t *testing.T) {
+	err_f := t.Errorf
+	if stopOnFailure {
+		err_f = t.Fatalf
+	}
+
+	n := NewNode()
+	if b, err := n.AddNodes(NewNode()); !b {
+		err_f("%s", err)
+	}
+	if b, err := n.AddNodes(Nodes{NewNode()}); !b {
+		err_f("%s", err)
+	}
+	if b, _ := n.AddNodes(23); b {
+		err_f("Invalid type didn't trigger error")
+	}
+	if b, _ := n.AddNodes("ana are mere"); b {
+		err_f("Invalid type didn't trigger error")
+	}
+}
+
+func TestDocument_AddNodes(t *testing.T) {
+	err_f := t.Errorf
+	if stopOnFailure {
+		err_f = t.Fatalf
+	}
+
+	d := NewDocument()
+	if b, err := d.AddNodes(NewNode()); !b {
+		err_f("%s", err)
+	}
+	if b, err := d.AddNodes(Nodes{NewNode()}); !b {
+		err_f("%s", err)
+	}
+	if b, _ := d.AddNodes(23); b {
+		err_f("Invalid type didn't trigger error")
+	}
+	if b, _ := d.AddNodes("ana are mere"); b {
+		err_f("Invalid type didn't trigger error")
+	}
+}
+
+func TestNode_AppendContent(t *testing.T) {
+	err_f := t.Errorf
+	if stopOnFailure {
+		err_f = t.Fatalf
+	}
+
+	n := NewNode()
+	s := []byte("test")
+	n.AppendContent(s)
+	if 0 != bytes.Compare(s, n.Content) {
+		err_f("Content is invalid '%s', '%s' expected", n.Content, s)
+	}
+}
+
+func TestDocument_Build(t *testing.T) {
+	err_f := t.Errorf
+	if stopOnFailure {
+		err_f = t.Fatalf
+	}
+
+	d := NewDocument()
+
+	h1 := NewHeading(1, []byte("The title"))
+	p := NewParagraph([]byte{})
+	p.AddNodes(NewInlineText([]byte("Ana are mere")))
+	p.AddNodes(NewInlineText([]byte("There was a new-line")))
+
+	nodes := Nodes{h1, p}
+	d.AddNodes(nodes)
+
+	if len(d.Children) != 2 {
+		err_f("Invalid number of children %d", len(d.Children))
+	}
+
+	fmt.Printf("%s", d)
 }
 
 func TestMain(m *testing.M) {

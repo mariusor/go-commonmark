@@ -6,7 +6,49 @@ import (
 	"strings"
 )
 
-func NewEmptyNode() Node {
+type (
+	NodeType   uint8
+	Document   Node
+	Nodes      []Node
+	Attributes map[string]string
+)
+
+type Node struct {
+	Type     NodeType
+	Content  []byte
+	Children Nodes
+	//Attributes Attributes
+}
+
+const (
+	None NodeType = iota
+	Doc
+	InlineText
+	H1
+	H2
+	H3
+	H4
+	H5
+	H6
+	Par
+	TBreak
+)
+
+var nodeTypeMap = map[string]NodeType{
+	"nil": None,
+	"doc": Doc,
+	"txt": InlineText,
+	"h1":  H1,
+	"h2":  H2,
+	"h3":  H3,
+	"h4":  H4,
+	"h5":  H5,
+	"h6":  H6,
+	"par": Par,
+	"tbr": TBreak,
+}
+
+func NewNode() Node {
 	return Node(Node{Type: None})
 }
 
@@ -69,12 +111,16 @@ func (n *Node) Empty() bool {
 	return n.Type == None /*|| len(n.Content) == 0*/
 }
 
+func (ns *Nodes) Empty() bool {
+	return len(*ns) == 0
+}
+
 func (d *Document) Empty() bool {
 	return len(d.Children) == 0
 }
 
 func (d Document) String() string {
-	var r string = fmt.Sprintf("Document:{%s}\n", d.Children)
+	var r string = fmt.Sprintf("Document{%s}\n", d.Children)
 	return r
 }
 
@@ -86,54 +132,9 @@ func (n Node) String() string {
 		r += fmt.Sprintf("[%s]", n.Type)
 	}
 	if len(n.Children) > 0 {
-		r += "\nChildren Nodes ["
-		for _, c := range n.Children {
-			r += fmt.Sprintf("  %s\n", c)
-		}
-		r += "]"
+		r += fmt.Sprintf("\n\tChildren{%s}\n", n.Children)
 	}
 	return r
-}
-
-type NodeType uint8
-
-const (
-	None NodeType = iota
-	Doc
-	InlineText
-	H1
-	H2
-	H3
-	H4
-	H5
-	H6
-	Par
-	TBreak
-)
-
-var nodeTypeMap = map[string]NodeType{
-	"nil": None,
-	"doc": Doc,
-	"txt": InlineText,
-	"h1":  H1,
-	"h2":  H2,
-	"h3":  H3,
-	"h4":  H4,
-	"h5":  H5,
-	"h6":  H6,
-	"par": Par,
-	"tbr": TBreak,
-}
-
-var trimb = func(s []byte) []byte {
-	return bytes.Trim(s, "\n\r ")
-}
-var trims = func(s string) string {
-	return strings.Trim(s, "\n\r ")
-}
-
-func GetNodeType(s string) NodeType {
-	return nodeTypeMap[s]
 }
 
 func (n NodeType) String() string {
@@ -155,20 +156,59 @@ func (n Nodes) String() string {
 	return s
 }
 
-type Document Node
-
-//type Document struct {
-//	Children Nodes
-//}
-
-type Node struct {
-	Type     NodeType
-	Content  []byte
-	Children Nodes
-	//Attributes Attributes
+func GetNodeType(s string) NodeType {
+	return nodeTypeMap[s]
 }
 
-type (
-	Nodes      []Node
-	Attributes map[string]string
-)
+func (d *Document) AddNodes(v interface{}) (bool, error) {
+	if val, err := validNodeType(v); !val {
+		return false, err
+	}
+	switch v.(type) {
+	case Node:
+		d.Children = append(d.Children, v.(Node))
+	case Nodes:
+		d.Children = append(d.Children, v.(Nodes)...)
+	}
+	return true, nil
+}
+
+func validNodeType(v interface{}) (bool, error) {
+	switch t := v.(type) {
+	case Node:
+		//log.Printf("%s", t)
+	case Nodes:
+		//log.Printf("%s", t)
+		//case Document, NodeType, Attributes:
+	default:
+		err := fmt.Errorf("invalid type '%s'", t)
+		return false, err
+	}
+	return true, nil
+}
+
+func (n *Node) AddNodes(v interface{}) (bool, error) {
+	if val, err := validNodeType(v); !val {
+		return false, err
+	}
+	switch v.(type) {
+	case Node:
+		n.Children = append(n.Children, v.(Node))
+	case Nodes:
+		n.Children = append(n.Children, v.(Nodes)...)
+	}
+
+	return true, nil
+}
+
+func (n *Node) AppendContent(c []byte) (bool, error) {
+	n.Content = append(n.Content, c...)
+	return true, nil
+}
+
+var trimb = func(s []byte) []byte {
+	return bytes.Trim(s, "\n\r ")
+}
+var trims = func(s string) string {
+	return strings.Trim(s, "\n\r ")
+}
