@@ -37,6 +37,7 @@ leaf_block = thematic_break | atx_heading;
 
 container_block = text_paragraph*;
 
-block = leaf_block | container_block;
+#block = leaf_block | container_block;
+block = container_block;
 
 }%%

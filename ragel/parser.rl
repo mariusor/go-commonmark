@@ -8,10 +8,11 @@
 package parser
 
 import(
-    m "markdown"
-    "log"
     "bytes"
     "errors"
+    "fmt"
+    "log"
+    m "markdown"
 )
 
 func arr_splice(dst []byte, src []byte, pos int) []byte {
@@ -38,24 +39,26 @@ func parse(data []byte) (m.Document, error) {
     //t_data = trimb(data)
     cs, p, pe := 0, 0, len(data)
     ts, te, act := 0, 0, 0
-    if false {
-        log.Printf("ts:%d", ts)
-    }
     eof := len(data)
 
     var node m.Node
     var doc m.Document
-    var heading_level uint;
-    var thematic_break_symbol byte
     var nodes m.Nodes;
 
+    var heading_level uint;
+    var thematic_break_symbol byte
+    if false {
+        log.Printf("ts:%d", ts)
+        log.Printf("sym: %s lvl: %d", string(thematic_break_symbol), heading_level)
+    }
+
+    fmt.Printf("%s", data)
     if pe == 0 {
         return doc, errors.New("Empty document")
     }
     doc = m.NewDocument()
 
     var mark int
-
     %%{
         action emit_eof {
             if doc.Empty() {
@@ -80,23 +83,34 @@ func parse(data []byte) (m.Document, error) {
             log.Printf("emit_add_block(%d)", p)
         }
 
-        document = (block %emit_add_block %mark)*;
+        action emit_add_thematic_break {
+            log.Printf("emit_add_thematic_break(%d)", p)
+        }
 
-#        main := |*
-#            block => emit_add_block;
-#            single_line_doc => emit_add_line;
-#        *|;
+        action emit_add_atx_heading {
+            log.Printf("emit_add_atx_heading(%d)", p)
+        }
 
-        main := document %eof(emit_eof);
+#        single_line_doc = line_char* (eol | eop)? %eof(emit_eof);
+#        document = (block %emit_add_block %mark)*;
+
+        main := |*
+#            thematic_break => emit_add_thematic_break;
+#            atx_heading => emit_add_atx_heading;
+#            single_line_doc => emit_add_paragraph;
+            text_paragraph => emit_add_paragraph;
+        *|;
+
+#        main := document %eof(emit_eof);
 
         write init;
         write exec;
     }%%
 
     if false {
-        //log.Printf("last node %s", node)
-        //log.Printf("nodes %s", nodes)
-        //log.Printf("doc %s", doc)
+        log.Printf("last node %s", node)
+        log.Printf("nodes %s", nodes)
+        log.Printf("doc %s", doc)
         log.Printf("mark:%d, te:%d, act:%d", mark, te, act)
     }
     return doc, nil
