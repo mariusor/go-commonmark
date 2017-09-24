@@ -1,25 +1,29 @@
 TEST := go test
+TEST_FLAGS := -v
 BUILD := go build
 RUN := go run
 RAGEL_COMPILE := ragel -Z -G2
 RAGEL_DOT := ragel -V -p
 
-test: cmarkparser.go
-	$(TEST) -v ./... -args quiet
+test: GOPATH := $(shell pwd)
+test: src/parser/cmarkparser.go
+	$(TEST) $(TEST_FLAGS) ./... -args quiet stop-on-failure
 
-coverage: cmarkparser.go
-	$(TEST) -v -covermode=count -coverprofile=coverage.out ./... -args quiet
+coverage: GOPATH := $(shell pwd)
+coverage: TEST_FLAGS += -covermode=count -coverprofile=coverage.out
+coverage: src/parser/cmarkparser.go test
 
-ragel: cmarkparser.go
+ragel: src/parser/cmarkparser.go
 
-cmarkparser.go: ./ragel/*.rl
-	$(RAGEL_COMPILE) -o cmarkparser.go ./ragel/cmarkparser.rl
+src/parser/cmarkparser.go: ./ragel/*.rl
+	$(RAGEL_COMPILE) -o src/parser/cmarkparser.go ./ragel/cmarkparser.rl
 
 dot:
-	$(RAGEL_DOT) -o cmarkparser.dot cmarkparser.rl
+	$(RAGEL_DOT) -o cmarkparser.dot ragel/cmarkparser.rl
 
-vtest: .ragel
-	$(TEST) -v ./...
+#test: .ragel
+#	$(TEST) -v ./...
 
 clean:
-	$(RM) -v cmarkparser.go
+	$(RM) -v src/parser/cmarkparser.go
+	$(RM) -v coverage.out
