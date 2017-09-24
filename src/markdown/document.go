@@ -1,6 +1,7 @@
-package cmarkparser
+package markdown
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 )
@@ -125,13 +126,13 @@ var nodeTypeMap = map[string]NodeType{
 }
 
 var trimb = func(s []byte) []byte {
-	return []byte(strings.Trim(string(s), "\n\r "))
+	return bytes.Trim(s, "\n\r ")
 }
 var trims = func(s string) string {
 	return strings.Trim(s, "\n\r ")
 }
 
-func getNodeType(s string) NodeType {
+func GetNodeType(s string) NodeType {
 	return nodeTypeMap[s]
 }
 
@@ -171,17 +172,3 @@ type (
 	Nodes      []Node
 	Attributes map[string]string
 )
-
-func arr_splice(dst []byte, src []byte, pos int) []byte {
-	var ret = make([]byte, 0)
-	for _, a := range dst[:pos] {
-		ret = append(ret, a)
-	}
-	for _, b := range src {
-		ret = append(ret, b)
-	}
-	for _, c := range dst[pos+1:] {
-		ret = append(ret, c)
-	}
-	return ret
-}
