@@ -1,4 +1,4 @@
-package cmarkparser
+package parser
 
 import (
 	"bytes"
@@ -8,28 +8,30 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	m "markdown"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 )
+
+var stopOnFailure = false
 
 type testPair struct {
 	text     string
 	expected bool
-	doc      Document
+	doc      m.Document
 }
 
 type tests map[string]testPair
 
-var emptyDoc = NewDocument()
+var emptyDoc = m.NewDocument()
 
-func newNode(t NodeType, s string, c Nodes) Node {
-	return Node{Type: t, Content: []byte(s), Children: c}
+func newNode(t m.NodeType, s string, c m.Nodes) m.Node {
+	return m.Node{Type: t, Content: []byte(s), Children: c}
 }
 
-func newDoc(n Nodes) Document {
-	return Document{Children: n}
+func newDoc(n m.Nodes) m.Document {
+	return m.Document{Type: m.Doc, Children: n}
 }
 
 var someTests = tests{
@@ -42,138 +44,140 @@ var someTests = tests{
 	"line": {
 		"some text",
 		true,
-		newDoc(Nodes{newNode(Par, "some text", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "some text", nil)}),
 	},
 	// null char
 	"null_char": {
 		"\x00",
 		true,
-		newDoc(Nodes{newNode(Par, "\ufffd", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "\ufffd", nil)}),
 	},
 	// spaces
 	"space#1": {
 		"\uc2a0",
 		true,
-		newDoc(Nodes{newNode(Par, "\uc2a0", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "\uc2a0", nil)}),
 	},
 	"space#2": {
 		"\u2000",
 		true,
-		newDoc(Nodes{newNode(Par, "\u2000", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "\u2000", nil)}),
 	},
 	"space#3": {
 		"\u2001",
 		true,
-		newDoc(Nodes{newNode(Par, "\u2001", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "\u2001", nil)}),
 	},
 	// links, for now treated as paragraphs
 	"link#1": {
 		"[ana](httpslittrme)",
 		true,
-		newDoc(Nodes{newNode(Par, "[ana](httpslittrme)", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "[ana](httpslittrme)", nil)}),
 	},
 	"link#2": {
 		"[ana](https://littr.me)\n",
 		true,
-		newDoc(Nodes{newNode(Par, "[ana](https://littr.me)\n", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "[ana](https://littr.me)\n", nil)}),
 	},
 	"link_after_text": {
 		"some text before [test 123](https://littr.me)\n",
 		true,
-		newDoc(Nodes{newNode(Par, "some text before [test 123](https://littr.me)\n", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me)\n", nil)}),
 	},
 	"link_before_text": {
 		"[test 123](https://littr.me) some text after\n",
 		true,
-		newDoc(Nodes{newNode(Par, "[test 123](https://littr.me) some text after\n", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "[test 123](https://littr.me) some text after\n", nil)}),
 	},
 	"link_inside_text": {
 		"some text before [test 123](https://littr.me) some text after\n",
 		true,
-		newDoc(Nodes{newNode(Par, "some text before [test 123](https://littr.me) some text after\n", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me) some text after\n", nil)}),
 	},
 	// utf8 only characters
 	"utf8#1": {
 		"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș",
 		true,
-		newDoc(Nodes{newNode(Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș", nil)}),
 	},
 	// thematic breaks
 	"break#1:-": {
 		" ---\n",
 		true,
-		newDoc(Nodes{newNode(TBreak, "-", nil)}),
+		newDoc(m.Nodes{newNode(m.TBreak, "-", nil)}),
 	},
 	"break#2:*": {
 		"  ***\n",
 		true,
-		newDoc(Nodes{newNode(TBreak, "*", nil)}),
+		newDoc(m.Nodes{newNode(m.TBreak, "*", nil)}),
 	},
 	"break#3:*": {
 		"  * * * *\n",
 		true,
-		newDoc(Nodes{newNode(TBreak, "*", nil)}),
+		newDoc(m.Nodes{newNode(m.TBreak, "*", nil)}),
 	},
 	"break#4:-": {
 		"   ___\r",
 		true,
-		newDoc(Nodes{newNode(TBreak, "_", nil)}),
+		newDoc(m.Nodes{newNode(m.TBreak, "_", nil)}),
 	},
 	// misleading thematic break
 	"not_a_break": {
 		"   _*-*__",
 		true,
-		newDoc(Nodes{newNode(Par, "   _*-*__", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "   _*-*__", nil)}),
 	},
 	// headings
 	"h1": {
 		" # ana are mere\n",
 		true,
-		newDoc(Nodes{newNode(H1, "ana are mere", nil)}),
+		newDoc(m.Nodes{newNode(m.H1, "ana are mere", nil)}),
 	},
 	"h2": {
 		"## ana are mere\n",
 		true,
-		newDoc(Nodes{newNode(H2, "ana are mere", nil)}),
+		newDoc(m.Nodes{newNode(m.H2, "ana are mere", nil)}),
 	},
 	"h3": {
 		"  ### ana are mere\n",
 		true,
-		newDoc(Nodes{newNode(H3, "ana are mere", nil)}),
+		newDoc(m.Nodes{newNode(m.H3, "ana are mere", nil)}),
 	},
 	"h4": {
 		"#### ana are mere\n",
 		true,
-		newDoc(Nodes{newNode(H4, "ana are mere", nil)}),
+		newDoc(m.Nodes{newNode(m.H4, "ana are mere", nil)}),
 	},
 	"h5": {
 		"   #####  ana-are-mere\n",
 		true,
-		newDoc(Nodes{newNode(H5, "ana-are-mere", nil)}),
+		newDoc(m.Nodes{newNode(m.H5, "ana-are-mere", nil)}),
 	},
 	"h6": {
 		" ###### ana-are-mere\n",
 		true,
-		newDoc(Nodes{newNode(H6, "ana-are-mere", nil)}),
+		newDoc(m.Nodes{newNode(m.H6, "ana-are-mere", nil)}),
 	},
 }
 
 func TestParse(t *testing.T) {
 	var err error
-	var doc Document
+	var doc m.Document
+	f := t.Errorf
+	if stopOnFailure {
+		f = t.Fatalf
+	}
 	for k, curTest := range someTests {
 		t.Logf("Testing: %s", k)
 		doc, err = Parse([]byte(curTest.text))
 
 		if err != nil && curTest.expected {
-			t.Errorf("Parse failed and success was expected %s\n %s", err, curTest.text)
-			return
+			f("Parse failed and success was expected %s\n %s", err, curTest.text)
 		}
 		j_t_doc, _ := json.Marshal(curTest.doc)
 		j_doc, _ := json.Marshal(doc)
-		if reflect.DeepEqual(j_t_doc, j_doc) {
-			t.Errorf("\n%s_________________\n%s", doc, curTest.doc)
-			return
+		if string(j_t_doc) != string(j_doc) {
+			f("\n%s_________________\n%s", doc, curTest.doc)
 		}
 	}
 }
@@ -220,16 +224,16 @@ type testNode struct {
 	Children []testNode
 }
 
-func (t *testDoc) Document() Document {
-	d := Document{}
+func (t *testDoc) Document() m.Document {
+	d := m.Document{}
 	for _, v := range t.Children {
 		d.Children = append(d.Children, *v.Node())
 	}
 	return d
 }
 
-func (t *testNode) Node() *Node {
-	n := Node{}
+func (t *testNode) Node() *m.Node {
+	n := m.Node{}
 	for _, v := range t.Children {
 		n.Children = append(n.Children, *v.Node())
 	}
@@ -241,7 +245,7 @@ func (t *testNode) Node() *Node {
 			n.Content = append(n.Content, byte(b))
 		}
 	}
-	n.Type = getNodeType(t.Type)
+	n.Type = m.GetNodeType(t.Type)
 	return &n
 }
 
@@ -250,9 +254,12 @@ func TestWithFiles(t *testing.T) {
 	var err error
 
 	tests, err = load_files(".md")
-
+	f := t.Errorf
+	if stopOnFailure {
+		f = t.Fatalf
+	}
 	for _, path := range tests {
-		var doc Document
+		var doc m.Document
 		var t_doc testDoc
 		data := get_file_contents(path)
 		t.Logf("Testing: %s", path)
@@ -261,26 +268,15 @@ func TestWithFiles(t *testing.T) {
 
 		res_doc := t_doc.Document()
 		doc, err = Parse(data)
-		//doc.Children = Nodes{
-		//	Node{Type: Par, Content: []byte("This is a multiline\ntest.")},
-		//	Node{Type: Par, Content: []byte("There was a paragraph break.")},
-		//}
-		//if err == nil {
-		//	log.Printf("%s", doc)
-		//}
 
 		if err != nil {
-			t.Errorf("%s", err)
-			break
+			f("%s", err)
 		}
 		j_res_doc, _ := json.Marshal(res_doc)
 		j_doc, _ := json.Marshal(doc)
-		if reflect.DeepEqual(j_res_doc, j_doc) {
-			t.Errorf("\n%s_________________\n%s", doc, res_doc)
-			break
-		} /*else {
-			t.Logf("%s", res_doc)
-		}*/
+		if string(j_res_doc) != string(j_doc) {
+			f("\n%s_________________\n%s", doc, res_doc)
+		}
 	}
 }
 
@@ -294,6 +290,7 @@ func TestMain(m *testing.M) {
 		return false
 	}
 	if f(os.Args, "stop-on-fail") {
+		stopOnFailure = true
 	}
 	if f(os.Args, "quiet") {
 		log.SetOutput(ioutil.Discard)
