@@ -2,11 +2,11 @@
     "Children": [
         {
             "Type": "par",
-            "Content": "This is a multiline\ntest."
+            "Content": ["This is a multiline", "test."]
         },
         {
             "Type": "par",
-            "Content": "There was a paragraph break."
+            "Content": ["There was a paragraph break."]
         }
     ]
 }

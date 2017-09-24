@@ -10,6 +10,8 @@ test: cmarkparser.go
 coverage: cmarkparser.go
 	$(TEST) -v -covermode=count -coverprofile=coverage.out ./... -args quiet
 
+ragel: cmarkparser.go
+
 cmarkparser.go: ./ragel/*.rl
 	$(RAGEL_COMPILE) -o cmarkparser.go ./ragel/cmarkparser.rl
 

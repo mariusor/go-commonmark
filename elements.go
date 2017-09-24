@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+func NewEmptyNode() Node {
+	return Node(Node{Type: None})
+}
+
+func NewDocument() Document {
+	return Document(Node{Type: Doc})
+}
+
 func NewInlineText(cont []byte) Node {
 	var el Node
 
@@ -58,6 +66,10 @@ func NewHeading(level uint, content []byte) Node {
 
 func (n *Node) Empty() bool {
 	return n.Type == None /*|| len(n.Content) == 0*/
+}
+
+func (d *Document) Empty() bool {
+	return len(d.Children) == 0
 }
 
 func (d Document) String() string {
@@ -142,9 +154,11 @@ func (n Nodes) String() string {
 	return s
 }
 
-type Document struct {
-	Children Nodes
-}
+type Document Node
+
+//type Document struct {
+//	Children Nodes
+//}
 
 type Node struct {
 	Type     NodeType
@@ -157,3 +171,17 @@ type (
 	Nodes      []Node
 	Attributes map[string]string
 )
+
+func arr_splice(dst []byte, src []byte, pos int) []byte {
+	var ret = make([]byte, 0)
+	for _, a := range dst[:pos] {
+		ret = append(ret, a)
+	}
+	for _, b := range src {
+		ret = append(ret, b)
+	}
+	for _, c := range dst[pos+1:] {
+		ret = append(ret, c)
+	}
+	return ret
+}

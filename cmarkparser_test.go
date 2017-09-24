@@ -22,7 +22,7 @@ type testPair struct {
 
 type tests map[string]testPair
 
-var emptyDoc = Document{}
+var emptyDoc = NewDocument()
 
 func newNode(t NodeType, s string, c Nodes) Node {
 	return Node{Type: t, Content: []byte(s), Children: c}
@@ -169,8 +169,10 @@ func TestParse(t *testing.T) {
 			t.Errorf("Parse failed and success was expected %s\n %s", err, curTest.text)
 			return
 		}
-		if !reflect.DeepEqual(curTest.doc, doc) {
-			t.Errorf("\n%s_________________\n%s", curTest.doc, doc)
+		j_t_doc, _ := json.Marshal(curTest.doc)
+		j_doc, _ := json.Marshal(doc)
+		if reflect.DeepEqual(j_t_doc, j_doc) {
+			t.Errorf("\n%s_________________\n%s", doc, curTest.doc)
 			return
 		}
 	}
@@ -243,7 +245,7 @@ func (t *testNode) Node() *Node {
 	return &n
 }
 
-func testWithFiles(t *testing.T) {
+func TestWithFiles(t *testing.T) {
 	var tests []string
 	var err error
 
@@ -259,16 +261,23 @@ func testWithFiles(t *testing.T) {
 
 		res_doc := t_doc.Document()
 		doc, err = Parse(data)
-
+		//doc.Children = Nodes{
+		//	Node{Type: Par, Content: []byte("This is a multiline\ntest.")},
+		//	Node{Type: Par, Content: []byte("There was a paragraph break.")},
+		//}
 		//if err == nil {
 		//	log.Printf("%s", doc)
 		//}
 
 		if err != nil {
 			t.Errorf("%s", err)
+			break
 		}
-		if !reflect.DeepEqual(res_doc, doc) {
+		j_res_doc, _ := json.Marshal(res_doc)
+		j_doc, _ := json.Marshal(doc)
+		if reflect.DeepEqual(j_res_doc, j_doc) {
 			t.Errorf("\n%s_________________\n%s", doc, res_doc)
+			break
 		} /*else {
 			t.Logf("%s", res_doc)
 		}*/
@@ -276,14 +285,17 @@ func testWithFiles(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	if func(slice []string, s string) bool {
+	f := func(slice []string, s string) bool {
 		for _, el := range slice {
 			if s == el {
 				return true
 			}
 		}
 		return false
-	}(os.Args, "quiet") {
+	}
+	if f(os.Args, "stop-on-fail") {
+	}
+	if f(os.Args, "quiet") {
 		log.SetOutput(ioutil.Discard)
 	}
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
