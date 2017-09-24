@@ -11,12 +11,10 @@ test: GOPATH = $(shell pwd)
 test: ragel
 	$(TEST) $(TEST_FLAGS) $(TEST_TARGET) -args quiet stop-on-failure
 
-#coverage_markdown.out: GOPATH = $(shell pwd)
 coverage_markdown.out: TEST_TARGET := markdown
 coverage_markdown.out: TEST_FLAGS += -covermode=count -coverprofile=coverage_$(TEST_TARGET).out
 coverage_markdown.out: $(RAGEL_OBJECT) test
 
-#coverage_parser.out: GOPATH = $(shell pwd)
 coverage_parser.out: TEST_TARGET := parser
 coverage_parser.out: TEST_FLAGS += -covermode=count -coverprofile=coverage_$(TEST_TARGET).out
 coverage_parser.out: $(RAGEL_OBJECT) test
