@@ -29,7 +29,7 @@ action emit_heading_level_end
 action emit_heading_end
 {
     log.Printf("he: %d:%d\n", mark, p)
-    node = NewHeading(heading_level, data[mark:p])
+    node = m.NewHeading(heading_level, data[mark:p])
 }
 
 heading_symbol = 0x23;

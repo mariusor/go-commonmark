@@ -16,7 +16,7 @@ action save_break_symbol {
 action emit_thematic_break 
 {
     log.Printf("th-br:%s\n", string(thematic_break_symbol));
-    node = NewThematicBreak(thematic_break_symbol)
+    node = m.NewThematicBreak(thematic_break_symbol)
 }
 
 thematic_break_underscore = (i_space{1,3} ('_' | i_space){3,} >save_break_symbol eol) %emit_thematic_break;

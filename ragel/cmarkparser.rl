@@ -5,16 +5,27 @@
 // MIT License
 //
 
-package cmarkparser
+package parser
 
 import(
+    m "markdown"
     "log"
     "bytes"
     "errors"
 )
 
-func Parse (data []byte) (Document, error) {
-    return parse(data)
+func arr_splice(dst []byte, src []byte, pos int) []byte {
+    var ret = make([]byte, 0)
+    for _, a := range dst[:pos] {
+        ret = append(ret, a)
+    }
+    for _, b := range src {
+        ret = append(ret, b)
+    }
+    for _, c := range dst[pos+1:] {
+        ret = append(ret, c)
+    }
+    return ret
 }
 
 %% machine parser;
@@ -23,33 +34,32 @@ func Parse (data []byte) (Document, error) {
 
 %% write data;
 
-func parse(data []byte) (Document, error) {
+func parse(data []byte) (m.Document, error) {
     //t_data = trimb(data)
     cs, p, pe := 0, 0, len(data)
     ts, te, act := 0, 0, 0
-    log.Printf("ts:%d", ts)
+    if false {
+        log.Printf("ts:%d", ts)
+    }
     eof := len(data)
 
-    var node Node
-    var doc Document
+    var node m.Node
+    var doc m.Document
     var heading_level uint;
     var thematic_break_symbol byte
-    var nodes Nodes;
+    var nodes m.Nodes;
 
     if pe == 0 {
         return doc, errors.New("Empty document")
     }
-    doc = NewDocument()
-    node = Node{}
-    //fmt.Printf("Incoming[%d]: \"%s\"", len(data), data)
+    doc = m.NewDocument()
 
     var mark int
-    //var content []byte
 
     %%{
         action emit_eof {
             if doc.Empty() {
-                node = NewParagraph(data[:p])
+                node = m.NewParagraph(data[:p])
                 //log.Printf("current node: %s\n", node)
             }
             if len(nodes) == 0 {
@@ -62,16 +72,15 @@ func parse(data []byte) (Document, error) {
         }
 
         action emit_add_block {
-            if !node.Empty() && node.Type != Doc {
+            if !node.Empty() && node.Type != m.Doc {
                 nodes = append(nodes, node)
                 //log.Printf("appending node: %s\n", node)
-                node = NewEmptyNode()
+                node = m.NewEmptyNode()
             }
             log.Printf("emit_add_block(%d)", p)
         }
 
-        #single_line_doc = line_char* (eop | eol)? >emit_add_line;
-        document = (block %emit_add_block)*;
+        document = (block %emit_add_block %mark)*;
 
 #        main := |*
 #            block => emit_add_block;
@@ -84,9 +93,11 @@ func parse(data []byte) (Document, error) {
         write exec;
     }%%
 
-    //log.Printf("last node %s", node)
-    //log.Printf("nodes %s", nodes)
-    //log.Printf("doc %s", doc)
-    log.Printf("mark:%d, te:%d, act:%d", mark, te, act)
+    if false {
+        //log.Printf("last node %s", node)
+        //log.Printf("nodes %s", nodes)
+        //log.Printf("doc %s", doc)
+        log.Printf("mark:%d, te:%d, act:%d", mark, te, act)
+    }
     return doc, nil
 }

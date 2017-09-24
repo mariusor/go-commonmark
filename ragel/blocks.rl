@@ -10,7 +10,7 @@ machine blocks;
 
 action emit_add_paragraph {
     if mark != p {
-        node = NewParagraph(bytes.Trim(data[mark:p], "\n\r"))
+        node = m.NewParagraph(bytes.Trim(data[mark:p], "\n\r"))
     }
     log.Printf("emit_add_paragraph(%d)", p)
     mark = p
@@ -38,6 +38,5 @@ leaf_block = thematic_break | atx_heading;
 container_block = text_paragraph*;
 
 block = leaf_block | container_block;
-#block = container_block;
 
 }%%
