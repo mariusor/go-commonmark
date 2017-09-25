@@ -1,15 +1,16 @@
 package parser
 
 import (
-	"testing"
-	"os"
-	"fmt"
-	"encoding/json"
-	m "markdown"
-	"path/filepath"
-	"errors"
-	"io"
 	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	m "markdown"
+	"os"
+	"path/filepath"
+	"reflect"
+	"testing"
 )
 
 func load_files(ext string) ([]string, error) {
@@ -44,12 +45,12 @@ func get_file_contents(path string) []byte {
 	return data
 }
 
-func testWithFiles(t *testing.T) {
+func _TestWithFiles(t *testing.T) {
 	var tests []string
 	var err error
 
 	tests, err = load_files(".md")
-	f := t.Errorf
+	var f = t.Errorf
 	if stopOnFailure {
 		f = t.Fatalf
 	}
@@ -73,10 +74,8 @@ func testWithFiles(t *testing.T) {
 		if err != nil {
 			f("%s", err)
 		}
-		j_res_doc, _ := json.Marshal(res_doc)
-		j_doc, _ := json.Marshal(doc)
-		if string(j_res_doc) != string(j_doc) {
-			f("\n%s_________________\n%s", doc, res_doc)
+		if !reflect.DeepEqual(res_doc, doc) {
+			f("\n%#v\n%#v\n%s\n%s", doc, res_doc, doc, res_doc)
 		}
 	}
 }
