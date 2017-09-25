@@ -42,11 +42,12 @@ action replace_insecure_char
     data = arr_splice(data, []byte{0xef, 0xbf, 0xbd}, p)
     // readjusting the pointers, as we just resized the data buffer
     eof = len(data)
+    p += 2
     pe = eof
 }
 
 action mark {
-    log.Printf("cur: %d\n", p)
+    log.Printf("mark(%d)", p)
     mark = p
 }
 
@@ -54,18 +55,18 @@ action emit_add_line {
 //    if !node.Empty() {
 //        node.Children = append(node.Children, NewInlineText(data[mark:p]))
 //    }
-    if node.Empty() {
-        node = NewParagraph(data[mark:p])
-    }
-    log.Printf("nl: %d\ncurnode %q", p, node.String())
+//    if node.Empty() {
+//        node = NewParagraph(data[mark:p])
+//    }
+    log.Printf("emit_add_line(%d)", p)
 }
 
-action emit_add_paragraph {
-    log.Printf("eop: %d\n", p)
+action print_char {
+    log.Printf("pos:%d char: %s", p, string(data[p-1:p]))
 }
 
 replacement = 0xef 0xbf 0xbd;
-insecure = 0x00 >replace_insecure_char;
+insecure = 0x00 >replace_insecure_char %print_char;
 
 # http://spec.commonmark.org/0.27/#ascii-punctuation-character
 # ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
@@ -92,8 +93,7 @@ utf8_char = (0x01..0x1f | 0x7f)                             %non_printable_ascii
             (0xf0..0xf4 0x80..0xbf 0x80..0xbf 0x80..0xbf)   %four_byte_utf8_sequence;
 
 # LF and CR characters
-eol = ((0x0d? 0x0a) | 0x0d) >emit_add_line;
-eop = eol{2} >emit_add_paragraph;
+eol_char = ((0x0d? 0x0a) | 0x0d);
 
 # UTF-8 white space characters
 utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-space 
@@ -105,11 +105,16 @@ utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-spac
 # Space, tab and utf8 space characters -> inline space
 i_space = 0x20 | 0x09 | utf8_space;
 
-ws = i_space | eol;
+ws = i_space | eol_char;
 
 character = ascii_char | utf8_char;
-line_char = i_space | character | insecure;
+line_char = (i_space | character | insecure | punctuation);# %print_char;
+
+eol = (eol_char{1}) %emit_add_line;
+
+#eop = ((0x0d 0x0a 0x0d 0x0a) | (0x0d 0x0d) | (0x0a 0x0a)) %emit_add_paragraph;
+eop = eol{2,};
 
 # eol terminated line
-line = line_char* eol;
+#line = line_char* eol;
 }%%

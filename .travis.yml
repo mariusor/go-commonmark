@@ -22,5 +22,8 @@ install:
 
 script:
 - ragel --version
-- make coverage
-- goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+- make coverage_markdown.out
+- make coverage_parser.out
+- export GOPATH="$GOPATH:$(pwd)"
+- goveralls -coverprofile=coverage_markdown.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+- goveralls -coverprofile=coverage_parser.out -service=travis-ci -repotoken $COVERALLS_TOKEN

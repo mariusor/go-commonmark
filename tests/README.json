@@ -1,0 +1,23 @@
+{
+    "Children": [
+        { 
+            "Type": "h1",
+            "Content": ["Ragel playground"],
+            "Children": []
+        },
+        {
+            "Type" : "tbr",
+            "Content": "-"
+        },
+        {
+            "Type": "par",
+            "Content": ["A small go repository to learn some ragel usage by implementing a Common Mark parser."],
+            "Children": []
+        },
+        {
+            "Type": "par",
+            "Content": ["Using the [0.27](http://spec.commonmark.org/0.27/) version of the specification."],
+            "Children": []
+        }
+    ]
+}
