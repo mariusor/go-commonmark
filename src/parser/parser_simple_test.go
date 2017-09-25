@@ -160,6 +160,21 @@ var someTests = tests{
 		true,
 		newDoc(m.Nodes{newNode(m.H6, "ana-are-mere", nil)}),
 	},
+	"h1_with_end": {
+		" # ana are mere #\n",
+		true,
+		newDoc(m.Nodes{newNode(m.H1, "ana are mere", nil)}),
+	},
+	"h2_with_end": {
+		"## ana are mere ##\n",
+		true,
+		newDoc(m.Nodes{newNode(m.H2, "ana are mere", nil)}),
+	},
+	"h3_with_mismatched_end": {
+		"### ana are mere ##\n",
+		true,
+		newDoc(m.Nodes{newNode(m.H3, "ana are mere", nil)}),
+	},
 }
 
 func TestSimpleParse(t *testing.T) {
@@ -193,7 +208,7 @@ type testNode struct {
 }
 
 func (t *testDoc) Document() m.Document {
-	d := m.Document{}
+	d := m.NewDocument()
 	for _, v := range t.Children {
 		d.Children = append(d.Children, *v.Node())
 	}

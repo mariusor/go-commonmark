@@ -13,17 +13,16 @@ include thematic_breaks "thematic_breaks.rl";
 include headings "headings.rl";
 
 action emit_add_paragraph {
-    //node = m.NewParagraph(bytes.Trim(data[mark:p], "\n\r"))
     node = m.NewParagraph(data[mark:p])
     log.Printf("par(%d): %s", p, node)
     //mark = p
 }
 
-text_paragraph =  line_char+ eop %emit_add_paragraph;
+text_paragraph =  line_char+ (eop | eol) %emit_add_paragraph;
 
 leaf_block = thematic_break | atx_heading;
 
-container_block = text_paragraph*;
+container_block = text_paragraph;
 
 block = leaf_block | container_block;
 

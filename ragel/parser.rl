@@ -46,6 +46,7 @@ func parse(data []byte) (m.Document, error) {
 
     var heading_level uint;
     var thematic_break_symbol byte
+    var end_of_heading int = 0
     if false {
         log.Printf("ts:%d", ts)
         log.Printf("sym: %s lvl: %d", string(thematic_break_symbol), heading_level)
@@ -84,6 +85,7 @@ func parse(data []byte) (m.Document, error) {
         }
 
         single_line_doc = line_char* (eol | eop)? %emit_add_paragraph %eof(emit_eof);
+#        document = (block %emit_add_block %mark)*;
 
         main := |*
             single_line_doc => emit_add_block;
