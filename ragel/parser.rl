@@ -10,7 +10,6 @@ package parser
 import(
     "bytes"
     "errors"
-    "fmt"
     "log"
     m "markdown"
 )
@@ -42,8 +41,8 @@ func parse(data []byte) (m.Document, error) {
     eof := len(data)
 
     var node m.Node
-    var doc m.Document
     var nodes m.Nodes;
+    var doc m.Document = m.NewDocument()
 
     var heading_level uint;
     var thematic_break_symbol byte
@@ -52,22 +51,14 @@ func parse(data []byte) (m.Document, error) {
         log.Printf("sym: %s lvl: %d", string(thematic_break_symbol), heading_level)
     }
 
-    fmt.Printf("%s", data)
+    //fmt.Printf("%s", data)
     if pe == 0 {
         return doc, errors.New("Empty document")
     }
-    doc = m.NewDocument()
 
     var mark int
     %%{
         action emit_eof {
-            if doc.Empty() {
-                node = m.NewParagraph(data[:p])
-                //log.Printf("current node: %s\n", node)
-            }
-            if len(nodes) == 0 {
-                nodes = append(nodes, node)
-            }
             if (len(nodes) > 0) {
                 doc.Children = nodes
             }
@@ -75,30 +66,30 @@ func parse(data []byte) (m.Document, error) {
         }
 
         action emit_add_block {
-            if !node.Empty() && node.Type != m.Doc {
-                nodes = append(nodes, node)
-                //log.Printf("appending node: %s\n", node)
-                node = m.NewEmptyNode()
-            }
-            log.Printf("emit_add_block(%d)", p)
+            nodes = append(nodes, node)
+            log.Printf("emit_add_block(%d): %#v", p, node)
+            node = m.NewNode()
         }
 
         action emit_add_thematic_break {
-            log.Printf("emit_add_thematic_break(%d)", p)
+            nodes = append(nodes, node)
+            log.Printf("emit_add_thematic_break(%d) %#v", p, node)
+            node = m.NewNode()
         }
 
         action emit_add_atx_heading {
-            log.Printf("emit_add_atx_heading(%d)", p)
+            nodes = append(nodes, node)
+            log.Printf("emit_add_atx_heading(%d) %#v", p, node)
+            node = m.NewNode()
         }
 
-#        single_line_doc = line_char* (eol | eop)? %eof(emit_eof);
-#        document = (block %emit_add_block %mark)*;
+        single_line_doc = line_char* (eol | eop)? %emit_add_paragraph %eof(emit_eof);
 
         main := |*
-#            thematic_break => emit_add_thematic_break;
-#            atx_heading => emit_add_atx_heading;
-#            single_line_doc => emit_add_paragraph;
-            text_paragraph => emit_add_paragraph;
+            single_line_doc => emit_add_block;
+            text_paragraph => emit_add_block;
+            thematic_break => emit_add_thematic_break;
+            atx_heading => emit_add_atx_heading;
         *|;
 
 #        main := document %eof(emit_eof);

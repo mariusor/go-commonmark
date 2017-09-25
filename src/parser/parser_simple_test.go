@@ -1,11 +1,11 @@
 package parser
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	m "markdown"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -22,82 +22,89 @@ type tests map[string]testPair
 var emptyDoc = m.NewDocument()
 
 func newNode(t m.NodeType, s string, c m.Nodes) m.Node {
-	return m.Node{Type: t, Content: []byte(s), Children: c}
+	node := m.NewNode()
+	node.Type = t
+	node.Content = []byte(s)
+	node.Children = c
+	return node
 }
 
 func newDoc(n m.Nodes) m.Document {
-	return m.Document{Type: m.Doc, Children: n}
+	doc := m.NewDocument()
+	doc.Type = m.Doc
+	doc.Children = n
+	return doc
 }
 
 var someTests = tests{
 	// empty doc
-	//"empty": {
-	//	"",
-	//	false,
-	//	emptyDoc,
-	//},
-	//"line": {
-	//	"some text",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "some text", nil)}),
-	//},
+	"empty": {
+		"",
+		false,
+		emptyDoc,
+	},
+	"line": {
+		"some text",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "some text", nil)}),
+	},
 	// null char
-	//"null_char": {
-	//	"\x00",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "\ufffd", nil)}),
-	//},
+	"null_char": {
+		"\x00",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "\ufffd", nil)}),
+	},
 	// spaces
-	//"space#1": {
-	//	"\uc2a0",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "\uc2a0", nil)}),
-	//},
-	//"space#2": {
-	//	"\u2000",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "\u2000", nil)}),
-	//},
-	//"space#3": {
-	//	"\u2001",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "\u2001", nil)}),
-	//},
+	"space#1": {
+		"\uc2a0",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "\uc2a0", nil)}),
+	},
+	"space#2": {
+		"\u2000",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "\u2000", nil)}),
+	},
+	"space#3": {
+		"\u2001",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "\u2001", nil)}),
+	},
 	// links, for now treated as paragraphs
-	//"link#1": {
-	//	"[ana](httpslittrme)",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "[ana](httpslittrme)", nil)}),
-	//},
-	//"link#2": {
-	//	"[ana](https://littr.me)\n",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "[ana](https://littr.me)\n", nil)}),
-	//},
-	//"link_after_text": {
-	//	"some text before [test 123](https://littr.me)\n",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me)\n", nil)}),
-	//},
-	//"link_before_text": {
-	//	"[test 123](https://littr.me) some text after\n",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "[test 123](https://littr.me) some text after\n", nil)}),
-	//},
-	//"link_inside_text": {
-	//	"some text before [test 123](https://littr.me) some text after\n",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me) some text after\n", nil)}),
-	//},
+	"link#1": {
+		"[ana](httpslittrme)",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "[ana](httpslittrme)", nil)}),
+	},
+	"link#2": {
+		"[ana](https://littr.me)\n",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "[ana](https://littr.me)\n", nil)}),
+	},
+	"link_after_text": {
+		"some text before [test 123](https://littr.me)\n",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me)\n", nil)}),
+	},
+	"link_before_text": {
+		"[test 123](https://littr.me) some text after\n",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "[test 123](https://littr.me) some text after\n", nil)}),
+	},
+	"link_inside_text": {
+		"some text before [test 123](https://littr.me) some text after\n",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me) some text after\n", nil)}),
+	},
 	// utf8 only characters
-	//"utf8#1": {
-	//	"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș", nil)}),
-	//},
+	"utf8#1": {
+		"𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "𐍈ᏚᎢᎵᎬᎢᎬᏒăîțș", nil)}),
+	},
 	// thematic breaks
 	"break#1:-": {
-		" ---\n",
+		" ---\n\n",
 		true,
 		newDoc(m.Nodes{newNode(m.TBreak, "-", nil)}),
 	},
@@ -106,22 +113,22 @@ var someTests = tests{
 		true,
 		newDoc(m.Nodes{newNode(m.TBreak, "*", nil)}),
 	},
-	//"break#3:*": {
-	//	"  * * * *\n",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.TBreak, "*", nil)}),
-	//},
+	"break#3:*": {
+		"  * * * *\n",
+		true,
+		newDoc(m.Nodes{newNode(m.TBreak, "*", nil)}),
+	},
 	"break#4:-": {
 		"   ___\r",
 		true,
 		newDoc(m.Nodes{newNode(m.TBreak, "_", nil)}),
 	},
 	// misleading thematic break
-	//"not_a_break": {
-	//	"   _*-*__",
-	//	true,
-	//	newDoc(m.Nodes{newNode(m.Par, "   _*-*__", nil)}),
-	//},
+	"not_a_break": {
+		"   _*-*__",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "   _*-*__", nil)}),
+	},
 	// headings
 	"h1": {
 		" # ana are mere\n",
@@ -155,24 +162,22 @@ var someTests = tests{
 	},
 }
 
-func testParse(t *testing.T) {
+func TestSimpleParse(t *testing.T) {
 	var err error
 	var doc m.Document
-	f := t.Errorf
+	var err_f = t.Errorf
 	if stopOnFailure {
-		f = t.Fatalf
+		err_f = t.Fatalf
 	}
 	for k, curTest := range someTests {
 		t.Logf("Testing: %s", k)
 		doc, err = Parse([]byte(curTest.text))
 
 		if err != nil && curTest.expected {
-			f("Parse failed and success was expected %s\n %s", err, curTest.text)
+			err_f("Parse failed and success was expected %s\n %s", err, curTest.text)
 		}
-		j_t_doc, _ := json.Marshal(curTest.doc)
-		j_doc, _ := json.Marshal(doc)
-		if string(j_t_doc) != string(j_doc) {
-			f("\n%s_________________\n%s", doc, curTest.doc)
+		if !reflect.DeepEqual(doc, curTest.doc) {
+			err_f("\n%#v\n%#v\n%s\n%s", doc, curTest.doc, doc, curTest.doc)
 		}
 	}
 }

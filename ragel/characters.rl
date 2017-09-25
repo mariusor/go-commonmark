@@ -42,6 +42,7 @@ action replace_insecure_char
     data = arr_splice(data, []byte{0xef, 0xbf, 0xbd}, p)
     // readjusting the pointers, as we just resized the data buffer
     eof = len(data)
+    p += 2
     pe = eof
 }
 
@@ -61,11 +62,11 @@ action emit_add_line {
 }
 
 action print_char {
-    log.Printf("pos:%d char: %s", p, string(data[p]))
+    log.Printf("pos:%d char: %s", p, string(data[p-1:p]))
 }
 
 replacement = 0xef 0xbf 0xbd;
-insecure = 0x00 >replace_insecure_char;
+insecure = 0x00 >replace_insecure_char %print_char;
 
 # http://spec.commonmark.org/0.27/#ascii-punctuation-character
 # ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
@@ -110,6 +111,9 @@ character = ascii_char | utf8_char;
 line_char = (i_space | character | insecure | punctuation);# %print_char;
 
 eol = (eol_char{1}) %emit_add_line;
+
+#eop = ((0x0d 0x0a 0x0d 0x0a) | (0x0d 0x0d) | (0x0a 0x0a)) %emit_add_paragraph;
+eop = eol{2,};
 
 # eol terminated line
 #line = line_char* eol;

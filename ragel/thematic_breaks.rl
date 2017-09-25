@@ -15,14 +15,14 @@ action save_break_symbol {
 
 action emit_thematic_break 
 {
-    log.Printf("th-br:%s\n", string(thematic_break_symbol));
     node = m.NewThematicBreak(thematic_break_symbol)
+    log.Printf("th-br(%d):%s", p, node);
 }
 
-thematic_break_underscore = (i_space{1,3} ('_' | i_space){3,} >save_break_symbol eol) %emit_thematic_break;
-thematic_break_star = (i_space{1,3} ('*' | i_space){3,} >save_break_symbol eol) %emit_thematic_break;
-thematic_break_minus = (i_space{1,3} ('-' | i_space){3,} >save_break_symbol eol) %emit_thematic_break;
+thematic_break_underscore = (i_space{1,3} ('_' | i_space){3,} >save_break_symbol);
+thematic_break_star = (i_space{1,3} ('*' | i_space){3,} >save_break_symbol);
+thematic_break_minus = (i_space{1,3} ('-' | i_space){3,} >save_break_symbol);
 
-thematic_break = (thematic_break_underscore | thematic_break_star | thematic_break_minus);
+thematic_break = ((thematic_break_underscore | thematic_break_star | thematic_break_minus) (eop | eol)? %emit_thematic_break);
 
 }%%
