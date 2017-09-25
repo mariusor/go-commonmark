@@ -1,12 +1,12 @@
 package markdown
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"testing"
-	"bytes"
 )
 
 var stopOnFailure = false
@@ -328,7 +328,6 @@ func TestDocument_Build(t *testing.T) {
 		err_f("Invalid number of children %d", len(d.Children))
 	}
 
-	fmt.Printf("%s", d)
 }
 
 func TestMain(m *testing.M) {
