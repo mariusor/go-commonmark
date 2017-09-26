@@ -184,6 +184,23 @@ func TestNode_String(t *testing.T) {
 	if e.String() != e_s {
 		err_f("Empty node string invalid: \n%s\n%s", e.String(), e_s)
 	}
+
+	nch := NewNode()
+	nch.Children = Nodes{NewNode()}
+
+	nch_s := "[nil]\n\tChildren{{\n\tNode{0}: [nil]\n}}\n"
+	if nch.String() != nch_s {
+		err_f("Empty node string invalid: \n%s\n%s", nch.String(), nch_s)
+	}
+
+	text := "some text"
+	nco := NewNode()
+	nco.Content = []byte(text)
+
+	nco_s := "[nil] \"" + text + "\""
+	if nco.String() != nco_s {
+		err_f("Empty node string invalid: \n%s\n%s", nco.String(), nco_s)
+	}
 }
 
 func TestNodes_String(t *testing.T) {
@@ -249,6 +266,11 @@ func TestGetNodeType(t *testing.T) {
 
 	if t := NewHeading(1, []byte{}).Type; GetNodeType(t.String()) != H1 {
 		err_f("Node should have type '%s', received '%s'", H1, t)
+	}
+
+	invalid := "invalid"
+	if GetNodeType(invalid) != None {
+		err_f("Node should have type '%s', received '%s'", None, invalid)
 	}
 }
 

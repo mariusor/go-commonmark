@@ -1,9 +1,7 @@
 package markdown
 
 import (
-	"bytes"
 	"fmt"
-	"strings"
 )
 
 type (
@@ -204,11 +202,4 @@ func (n *Node) AddNodes(v interface{}) (bool, error) {
 func (n *Node) AppendContent(c []byte) (bool, error) {
 	n.Content = append(n.Content, c...)
 	return true, nil
-}
-
-var trimb = func(s []byte) []byte {
-	return bytes.Trim(s, "\n\r ")
-}
-var trims = func(s string) string {
-	return strings.Trim(s, "\n\r ")
 }
