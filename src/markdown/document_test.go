@@ -206,7 +206,7 @@ func TestNodeType_String(t *testing.T) {
 		err_f = t.Fatalf
 	}
 
-	for nt_s, nt := range nodeTypeMap {
+	for nt, nt_s := range nodeTypeMap {
 		if nt_s != nt.String() {
 			err_f("Node type string invalid: \n%s\n%s", nt.String(), nt_s)
 		}

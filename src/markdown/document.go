@@ -34,18 +34,18 @@ const (
 	TBreak
 )
 
-var nodeTypeMap = map[string]NodeType{
-	"nil": None,
-	"doc": Doc,
-	"txt": InlineText,
-	"h1":  H1,
-	"h2":  H2,
-	"h3":  H3,
-	"h4":  H4,
-	"h5":  H5,
-	"h6":  H6,
-	"par": Par,
-	"tbr": TBreak,
+var nodeTypeMap = map[NodeType]string{
+	None:       "nil",
+	Doc:        "doc",
+	InlineText: "txt",
+	H1:         "h1",
+	H2:         "h2",
+	H3:         "h3",
+	H4:         "h4",
+	H5:         "h5",
+	H6:         "h6",
+	Par:        "par",
+	TBreak:     "tbr",
 }
 
 func NewNode() Node {
@@ -138,18 +138,13 @@ func (n Node) String() string {
 }
 
 func (n NodeType) String() string {
-	for key, node := range nodeTypeMap {
-		if node == n {
-			return key
-		}
-	}
-	return "_nil"
+	return nodeTypeMap[n]
 }
 
-func (n Nodes) String() string {
+func (ns Nodes) String() string {
 	var s string
 	s += "{\n"
-	for k, v := range n {
+	for k, v := range ns {
 		s += fmt.Sprintf("\tNode{%d}: %s\n", k, v)
 	}
 	s += "}"
@@ -157,7 +152,12 @@ func (n Nodes) String() string {
 }
 
 func GetNodeType(s string) NodeType {
-	return nodeTypeMap[s]
+	for nt, label := range nodeTypeMap {
+		if label == s {
+			return nt
+		}
+	}
+	return None
 }
 
 func (d *Document) AddNodes(v interface{}) (bool, error) {
