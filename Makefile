@@ -3,8 +3,8 @@ TEST_FLAGS := -v
 TEST_TARGET := ./...
 BUILD := go build
 RUN := go run
-RAGEL_COMPILE := ragel -Z -G2
-RAGEL_DOT := ragel -V -p
+RAGEL_COMPILE := ragel -n -Z -G2
+RAGEL_DOT := ragel -n -V -p
 RAGEL_OBJECT := src/parser/parser_internal.go
 
 test: GOPATH = $(shell pwd)
