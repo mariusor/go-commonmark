@@ -20,11 +20,12 @@ action emit_add_paragraph {
     log.Printf("par(%d): %s", end_of_par, node)
 }
 
-single_line_doc = ((line_char | punctuation)** (eol)?);
-text_paragraph = ((line_char | punctuation)** eop);
+line = line_char+ eol;
+single_line_block = line_char+ eol? >emit_add_paragraph;
+text_paragraph = line_char+ eop >emit_add_paragraph;
+container_block = (single_line_block | text_paragraph);
 
-leaf_block = thematic_break | atx_heading;
-container_block = text_paragraph;
-block = leaf_block | container_block;
+leaf_block = (thematic_break | atx_heading);
+block = (container_block | leaf_block);
 
 }%%

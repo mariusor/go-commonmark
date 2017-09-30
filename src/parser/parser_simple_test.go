@@ -48,6 +48,31 @@ var someTests = tests{
 		true,
 		newDoc(m.Nodes{newNode(m.Par, "some text", nil)}),
 	},
+	"line_eol": {
+		"some text\n",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "some text", nil)}),
+	},
+	"line_mac_eol": {
+		"some text\r",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "some text", nil)}),
+	},
+	"line_win_eol": {
+		"some text\r\n",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "some text", nil)}),
+	},
+	//"2line_eol": {
+	//	"some text\ntest\n",
+	//	true,
+	//	newDoc(m.Nodes{newNode(m.Par, "some text\ntest", nil)}),
+	//},
+	"line_eop": {
+		"some text\n\n",
+		true,
+		newDoc(m.Nodes{newNode(m.Par, "some text", nil)}),
+	},
 	// null char
 	"null_char": {
 		"\x00",
@@ -109,29 +134,29 @@ var someTests = tests{
 		newDoc(m.Nodes{newNode(m.TBreak, "-", nil)}),
 	},
 	"break#2:*": {
-		"  ***\n",
+		"  ***\n\n",
 		true,
 		newDoc(m.Nodes{newNode(m.TBreak, "*", nil)}),
 	},
 	"break#3:*": {
-		"  * * * *\n",
+		"  * * * *\n\n",
 		true,
 		newDoc(m.Nodes{newNode(m.TBreak, "*", nil)}),
 	},
 	"break#4:-": {
-		"   ___\r",
+		"   ___\r\r",
 		true,
 		newDoc(m.Nodes{newNode(m.TBreak, "_", nil)}),
 	},
 	// misleading thematic break
 	"not_a_break": {
-		"   _*-*__",
+		"   _*-*__\r\n",
 		true,
 		newDoc(m.Nodes{newNode(m.Par, "   _*-*__", nil)}),
 	},
 	// headings
 	"h1": {
-		" # ana are mere\n",
+		" # ana are mere\n\n",
 		true,
 		newDoc(m.Nodes{newNode(m.H1, "ana are mere", nil)}),
 	},
@@ -180,19 +205,19 @@ var someTests = tests{
 func TestSimpleParse(t *testing.T) {
 	var err error
 	var doc m.Document
-	var err_f = t.Errorf
+	var errF = t.Errorf
 	if stopOnFailure {
-		err_f = t.Fatalf
+		errF = t.Fatalf
 	}
 	for k, curTest := range someTests {
 		t.Logf("Testing: %s", k)
 		doc, err = Parse([]byte(curTest.text))
 
 		if err != nil && curTest.expected {
-			err_f("Parse failed and success was expected %s\n %s", err, curTest.text)
+			errF("Parse failed and success was expected %s\n %s", err, curTest.text)
 		}
 		if !reflect.DeepEqual(doc, curTest.doc) {
-			err_f("\n%#v\n%#v\n%s\n%s", doc, curTest.doc, doc, curTest.doc)
+			errF("\n%#v\n%#v\n%s\n%s", doc, curTest.doc, doc, curTest.doc)
 		}
 	}
 }
@@ -247,6 +272,6 @@ func TestMain(m *testing.M) {
 	if f(os.Args, "quiet") {
 		log.SetOutput(ioutil.Discard)
 	}
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.SetFlags(log.LstdFlags | log.Lshortfile & 0)
 	os.Exit(m.Run())
 }

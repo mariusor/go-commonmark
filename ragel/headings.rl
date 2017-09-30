@@ -47,6 +47,6 @@ heading_end = heading_symbol{1,6};
 heading_char = line_char | punctuation;
 
 heading = heading_level i_space+ %emit_heading_level_end heading_char+ (i_space+ heading_end+ >emit_end_of_heading)?;
-atx_heading = ((i_space{0,3} heading) (eop | eol) %emit_heading_end);
+atx_heading = ((i_space{0,3} heading) eol* %emit_heading_end);
 
 }%%

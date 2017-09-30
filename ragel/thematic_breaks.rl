@@ -23,6 +23,6 @@ thematic_break_underscore = (i_space{1,3} ('_' | i_space){3,} >save_break_symbol
 thematic_break_star = (i_space{1,3} ('*' | i_space){3,} >save_break_symbol);
 thematic_break_minus = (i_space{1,3} ('-' | i_space){3,} >save_break_symbol);
 
-thematic_break = ((thematic_break_underscore | thematic_break_star | thematic_break_minus) (eop | eol)? %emit_thematic_break);
+thematic_break = ((thematic_break_underscore | thematic_break_star | thematic_break_minus) eol* %emit_thematic_break);
 
 }%%

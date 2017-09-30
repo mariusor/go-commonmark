@@ -9,26 +9,18 @@
 
 machine character_definitions;
 
-action non_printable_ascii
-{
+action non_printable_ascii {
     //log.Printf("np: %s\n", data[p]);
 }
-
-action two_byte_utf8_sequence
-{
+action two_byte_utf8_sequence {
     //log.Printf("2b %s\n", data[p-2:p]);
 }
-
-action three_byte_utf8_sequence
-{
+action three_byte_utf8_sequence {
     //log.Printf("3b %s\n", data[p-3:p]);
 }
-
-action four_byte_utf8_sequence
-{
+action four_byte_utf8_sequence {
     //log.Printf("4b %s\n", data[p-4:p]);
 }
-
 action two_byte_utf8_space {
     //log.Printf("2bsp %s\n", data[p-2:p]);
 }
@@ -50,26 +42,21 @@ action mark {
     log.Printf("mark(%d)", p)
     mark = p
 }
-
 action mark_end_of_paragraph {
+    log.Printf("mark_end_of_paragraph(%d)", p)
     end_of_par = p
 }
 action emit_add_line {
-//    if !node.Empty() {
-//        node.Children = append(node.Children, NewInlineText(data[mark:p]))
-//    }
-//    if node.Empty() {
-//        node = NewParagraph(data[mark:p])
-//    }
     log.Printf("emit_add_line(%d)", p)
 }
 
-action print_char {
-    log.Printf("pos:%d char: %s", p, string(data[p-1:p]))
-}
+#action print_char {
+#    //log.Printf("pos:%d char: %s", p, string(data[p-1:p]))
+#}
 
 replacement = 0xef 0xbf 0xbd;
-insecure = 0x00 >replace_insecure_char %print_char;
+#insecure = 0x00 >replace_insecure_char %print_char;
+insecure = 0x00 >replace_insecure_char;
 
 # http://spec.commonmark.org/0.27/#ascii-punctuation-character
 # ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
@@ -99,24 +86,24 @@ utf8_char = (0x01..0x1f | 0x7f)                             %non_printable_ascii
 eol_char = ((0x0d? 0x0a) | 0x0d);
 
 # UTF-8 white space characters
-utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-space 
+utf8_space = (0xc2 0xa0)               %two_byte_utf8_space    | # no-break-space
              (0xe1 0x9a 0x80                                   | # ogham space
-             (0xe2 0x80 (0x80..0x8a | 0xaf | 0x9f))            | # en/em quad, en/em space, three, four and six per em space, figure space, punctuation space, 
+             (0xe2 0x80 (0x80..0x8a | 0xaf | 0x9f))            | # en/em quad, en/em space, three, four and six per em space, figure space, punctuation space,
                                                                  #   thin space, hair space, narrow no-break space, medium mathematical space
              (0xe3 0x80 0x80))         %three_byte_utf8_space;   # ideographic space
 
 # Space, tab and utf8 space characters -> inline space
 i_space = 0x20 | 0x09 | utf8_space;
+#i_space = 0x20 | 0x09;
 
 ws = i_space | eol_char;
 
 character = ascii_char | utf8_char;
-line_char = (i_space | character | insecure | punctuation);# %print_char;
+#line_char = (i_space | character | insecure | punctuation);# %print_char;
+line_char = (i_space | character | insecure | punctuation);
 
-eol = (eol_char{1}) %emit_add_line;
-
-#eop = ((0x0d 0x0a 0x0d 0x0a) | (0x0d 0x0d) | (0x0a 0x0a));
-eop = eol{2,} > mark_end_of_paragraph;
+eol = eol_char{1};
+eop = eol{2,} %mark_end_of_paragraph;
 
 # eol terminated line
 #line = line_char* eol;
