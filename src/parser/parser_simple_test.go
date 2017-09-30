@@ -79,22 +79,22 @@ var someTests = tests{
 	"link#2": {
 		"[ana](https://littr.me)\n",
 		true,
-		newDoc(m.Nodes{newNode(m.Par, "[ana](https://littr.me)\n", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "[ana](https://littr.me)", nil)}),
 	},
 	"link_after_text": {
 		"some text before [test 123](https://littr.me)\n",
 		true,
-		newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me)\n", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me)", nil)}),
 	},
 	"link_before_text": {
 		"[test 123](https://littr.me) some text after\n",
 		true,
-		newDoc(m.Nodes{newNode(m.Par, "[test 123](https://littr.me) some text after\n", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "[test 123](https://littr.me) some text after", nil)}),
 	},
 	"link_inside_text": {
 		"some text before [test 123](https://littr.me) some text after\n",
 		true,
-		newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me) some text after\n", nil)}),
+		newDoc(m.Nodes{newNode(m.Par, "some text before [test 123](https://littr.me) some text after", nil)}),
 	},
 	// utf8 only characters
 	"utf8#1": {

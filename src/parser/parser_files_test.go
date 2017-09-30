@@ -45,7 +45,7 @@ func get_file_contents(path string) []byte {
 	return data
 }
 
-func _TestWithFiles(t *testing.T) {
+func TestWithFiles(t *testing.T) {
 	var tests []string
 	var err error
 
