@@ -13,17 +13,18 @@ include thematic_breaks "thematic_breaks.rl";
 include headings "headings.rl";
 
 action emit_add_paragraph {
-    node = m.NewParagraph(data[mark:p])
-    log.Printf("par(%d): %s", p, node)
-    //mark = p
+    if end_of_par == 0 {
+        end_of_par = p
+    }
+    node = m.NewParagraph(data[mark:end_of_par])
+    log.Printf("par(%d): %s", end_of_par, node)
 }
 
-text_paragraph =  line_char+ (eop | eol) %emit_add_paragraph;
+single_line_doc = ((line_char | punctuation)** (eol)?);
+text_paragraph = ((line_char | punctuation)** eop);
 
 leaf_block = thematic_break | atx_heading;
-
 container_block = text_paragraph;
-
 block = leaf_block | container_block;
 
 }%%

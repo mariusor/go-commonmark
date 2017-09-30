@@ -47,6 +47,7 @@ func parse(data []byte) (m.Document, error) {
     var heading_level uint;
     var thematic_break_symbol byte
     var end_of_heading int = 0
+    var end_of_par int = 0
     if false {
         log.Printf("ts:%d", ts)
         log.Printf("sym: %s lvl: %d", string(thematic_break_symbol), heading_level)
@@ -61,7 +62,7 @@ func parse(data []byte) (m.Document, error) {
     %%{
         action emit_eof {
             if (len(nodes) > 0) {
-                doc.Children = nodes
+                doc.AddNodes(nodes)
             }
             log.Printf("emit_end_of_file:(%d)", eof)
         }
@@ -84,17 +85,16 @@ func parse(data []byte) (m.Document, error) {
             node = m.NewNode()
         }
 
-        single_line_doc = line_char* (eol | eop)? %emit_add_paragraph %eof(emit_eof);
-#        document = (block %emit_add_block %mark)*;
+        document = (single_line_doc | text_paragraph*) @emit_add_paragraph %eof(emit_eof);
 
+        #document = ((block %emit_add_block)* | (single_line_doc %emit_add_block));
+        #main := document %eof emit_eof;
         main := |*
-            single_line_doc => emit_add_block;
-            text_paragraph => emit_add_block;
+            document => emit_add_block;
+            #single_line_doc => emit_add_block;
             thematic_break => emit_add_thematic_break;
             atx_heading => emit_add_atx_heading;
         *|;
-
-#        main := document %eof(emit_eof);
 
         write init;
         write exec;

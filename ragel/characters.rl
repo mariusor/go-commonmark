@@ -51,6 +51,9 @@ action mark {
     mark = p
 }
 
+action mark_end_of_paragraph {
+    end_of_par = p
+}
 action emit_add_line {
 //    if !node.Empty() {
 //        node.Children = append(node.Children, NewInlineText(data[mark:p]))
@@ -112,8 +115,8 @@ line_char = (i_space | character | insecure | punctuation);# %print_char;
 
 eol = (eol_char{1}) %emit_add_line;
 
-#eop = ((0x0d 0x0a 0x0d 0x0a) | (0x0d 0x0d) | (0x0a 0x0a)) %emit_add_paragraph;
-eop = eol{2,};
+#eop = ((0x0d 0x0a 0x0d 0x0a) | (0x0d 0x0d) | (0x0a 0x0a));
+eop = eol{2,} > mark_end_of_paragraph;
 
 # eol terminated line
 #line = line_char* eol;
