@@ -19,9 +19,12 @@ coverage_parser.out: TEST_TARGET := parser
 coverage_parser.out: TEST_FLAGS += -covermode=count -coverprofile=coverage_$(TEST_TARGET).out
 coverage_parser.out: $(RAGEL_OBJECT) test
 
+.PHONY: ragel
 ragel: $(RAGEL_OBJECT)
 
-$(RAGEL_OBJECT): ./ragel/*.rl
+$(RAGEL_OBJECT) : ragel/%.rl
+
+ragel/%.rl:
 	$(RAGEL_COMPILE) -o $(RAGEL_OBJECT) ./ragel/parser.rl
 
 dot:
