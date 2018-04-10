@@ -12,7 +12,8 @@ addons:
 
 env:
   global:
-    secure: L65qZXwumQngpbZUUvpz9knNDzS53l/mvyaIYv6/BA9y7jsb87PVsL0gELCzjNKuS2pobzs5hMbpSMmFty4ApJ33R4+UlHRPZkpR+5iJKam3jcBUkegfZu/cPxMxAJnuUwQCoOOKDC+y5zVh4ubUlE3nin1qZA8AgJeDYWS0cALSK8EXb6cLN98x9GVXH2GbNQj2GeFDOjD3NGpSu19RokDdpW6JJ9MBWIwmbTh7SlcHl/wYro0w1GzGl6MQxXx/n3+c7U4E5+Qm2dapOUwncORBnAAAPEKtO+amkmaYQl3Tzc2uMtXrMs8Z11t2/NzuN2BTGPenG72+8i6RRCeosAq9Qu14k9TuBwUoth3MNTNwA9jpNUHjnTsnArk0w113eIncI+h11++WksDlE8rz71IbiPY7eNehlK3+Mo5nWaRCKzi7GbM0ScZ+L9o1cBuS3yd+hQdlkGUZGH+xSoFaZLg6blUfCMy5Y+46ZOEmdJrVZ3PW5UmOh1Pm6rixwgZiGYAPS0nD0Ss2n7WSsp2xe/0/bPLJzyBE0NJJION/EZcLhruxkPLs3Jli4u/JAuh/I5JJfyFCl0UTTF4MpyAp5iO8G2Trf7koguhVRfAhcZ3bKMKKab2IjdcOTN3CO+zo1K0ABsGU29jmgrCXWPts96Ex3nBPDGZvv59Q9na3kl0=
+    secure: "Gyz5ao/rfC37rkJkNpMCqLUwL8OtuLpYY64qxyEDKJEw6phjK4fJBImqt4fdsKvzGUPgmww5WbReS84voFBc+ckod4sXT3WiD4T7TN0qAU6ntBjb42TO0O7VwG7kRkfnrdtuseT+DxTVhvIxREcUTlHwJHnUbFBh0fWbNeSPBScAnK017OGm6xY9GEt/1gMZu4QYM964zhKRJVSZ0+2UDKiVg4WNKRfOT9F1GkxqEhojUataNcrxWCpM0dXWrMk6lZS2YMKgLwSAbvbMnwxPe+FG2ZxVFUlfZYeksutpQPzJh5qYHXRFyk3EkzSV4+gSfac/1qwpQCxWQSk7znHZK6FtnYJi/Em2YWlfkW/8kqBwdRhEx6ZXkxMl3YFeaVg0pCAt1RhOll8YzzKvGztSDUS9LdCZMaGnh++gRb10xIAv0hz3cX/taU8mUMQ3EWTsSkTFPvgLRzVIEuHtxABLcg2OqpKvmFSLRDpJWxeS1InVpbhppXaZDtj2JyFiq4pmybMxvhVyda5jI4baqseq701/t5pLeSi/qIQGS7wWuYmMa3T/woRcDhq328WFKQco4mgRi9Rpf17THOp3HYvbwn9YZ78ML+9MGTcW52QBCtPzjAaU275dp7W6U2+fj5pbMfSkz4jv9E9oGaaw76Vc6b15An9PFOyLk0Z1JoYAS/c="
+
 matrix:
   allow_failures:
   - go: tip
@@ -20,7 +21,6 @@ matrix:
 
 install:
 - go get github.com/modocache/gover
-- go get github.com/mattn/goveralls
 - go get github.com/dave/courtney
 
 script:
@@ -33,4 +33,4 @@ after_success:
 - courtney -o coverage_markdown.coverprofile markdown
 - courtney -o coverage_parser.coverprofile parser
 - gover
-- goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
+- bash <(curl -s https://codecov.io/bash) -f gover.coverprofile
