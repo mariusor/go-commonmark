@@ -19,6 +19,7 @@ matrix:
   fast_finish: true
 
 install:
+- go get github.com/modocache/gover
 - go get github.com/mattn/goveralls
 - go get github.com/dave/courtney
 
@@ -29,7 +30,7 @@ script:
 
 after_success:
 - export GOPATH="$GOPATH:$(pwd)"
-- courtney -o coverage_markdown.out markdown
-- courtney -o coverage_parser.out parser
-- goveralls -coverprofile=coverage_markdown.out -service=travis-ci -repotoken $COVERALLS_TOKEN
-- goveralls -coverprofile=coverage_parser.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+- courtney -o coverage_markdown.coverprofile markdown
+- courtney -o coverage_parser.coverprofile parser
+- gover
+- goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
