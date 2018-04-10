@@ -30,7 +30,8 @@ script:
 
 after_success:
 - export GOPATH="$GOPATH:$(pwd)"
-- courtney -o coverage_markdown.coverprofile markdown
-- courtney -o coverage_parser.coverprofile parser
+- courtney -o markdown.coverprofile markdown
+- courtney -o parser.coverprofile parser
 - gover
+- wc -l gover.coverprofile
 - bash <(curl -s https://codecov.io/bash) -f gover.coverprofile
