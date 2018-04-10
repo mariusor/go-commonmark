@@ -21,7 +21,6 @@ matrix:
 
 install:
 - go get github.com/modocache/gover
-- go get github.com/dave/courtney
 
 script:
 - export GOPATH="$GOPATH:$(pwd)"
@@ -30,8 +29,8 @@ script:
 
 after_success:
 - export GOPATH="$GOPATH:$(pwd)"
-- courtney -o markdown.coverprofile markdown
-- courtney -o parser.coverprofile parser
+- go test -cover -coverprofile markdown.coverprofile markdown
+- go test -cover -coverprofile parser.coverprofile parser
 - gover
 - wc -l gover.coverprofile
 - bash <(curl -s https://codecov.io/bash) -f gover.coverprofile
