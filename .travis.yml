@@ -1,7 +1,8 @@
 language: go
 
 go:
-- 1.9
+- "1.9"
+- "1.10"
 - tip
 
 addons:
@@ -19,11 +20,16 @@ matrix:
 
 install:
 - go get github.com/mattn/goveralls
+- go get github.com/dave/courtney
 
 script:
-- ragel --version
-- make coverage_markdown.out
-- make coverage_parser.out
 - export GOPATH="$GOPATH:$(pwd)"
+- ragel --version
+- make test
+
+after_success:
+- export GOPATH="$GOPATH:$(pwd)"
+- courtney -o coverage_markdown.out markdown
+- courtney -o coverage_parser.out parser
 - goveralls -coverprofile=coverage_markdown.out -service=travis-ci -repotoken $COVERALLS_TOKEN
 - goveralls -coverprofile=coverage_parser.out -service=travis-ci -repotoken $COVERALLS_TOKEN
