@@ -47,11 +47,11 @@ var nodeTypeMap = map[NodeType]string{
 }
 
 func NewNode() Node {
-	return Node(Node{Type: None})
+	return Node{Type: None}
 }
 
 func NewDocument() Document {
-	return Document(Node{Type: Doc})
+	return Document{Type: Doc}
 }
 
 func NewInlineText(cont []byte) Node {
