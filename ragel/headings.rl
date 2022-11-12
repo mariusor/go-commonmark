@@ -17,28 +17,28 @@ action emit_heading_start
 
 action emit_heading_level
 {
-    heading_level++;
+	heading_level++;
 }
 
 action emit_heading_level_end
 {
-    //log.Printf("hle: %d", p)
-    mark = p
+	//log.Printf("hle: %d", p)
+	mark = p
 }
 
 action emit_end_of_heading {
-    end_of_heading = p
-    log.Printf("end heading %d(%d)", heading_level, p)
+	end_of_heading = p
+	log.Printf("end heading %d(%d)", heading_level, p)
 }
 
 action emit_heading_end
 {
-    if end_of_heading == 0 {
-        end_of_heading = p
-    }
-    node = m.NewHeading(heading_level, bytes.Trim(data[mark:end_of_heading], " \n\r"))
-    log.Printf("h%d(%d): %s", heading_level, p, node)
-    end_of_heading = 0
+	if end_of_heading == 0 {
+		end_of_heading = p
+	}
+	node = m.NewHeading(heading_level, bytes.Trim(data[mark:end_of_heading], " \n\r"))
+	log.Printf("h%d(%d): %s", heading_level, p, node)
+	end_of_heading = 0
 }
 
 heading_symbol = 0x23; # '#'

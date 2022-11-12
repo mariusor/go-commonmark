@@ -10,13 +10,13 @@
 machine thematic_breaks;
 
 action save_break_symbol {
-    thematic_break_symbol = data[p]
+	thematic_break_symbol = data[p]
 }
 
 action emit_thematic_break 
 {
-    node = m.NewThematicBreak(thematic_break_symbol)
-    log.Printf("th-br(%d):%s", p, node);
+	node = m.NewThematicBreak(thematic_break_symbol)
+	log.Printf("th-br(%d):%s", p, node);
 }
 
 thematic_break_underscore = (i_space{1,3} ('_' | i_space){3,} >save_break_symbol);

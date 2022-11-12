@@ -10,48 +10,48 @@
 machine character_definitions;
 
 action non_printable_ascii {
-    //log.Printf("np: %s\n", data[p]);
+	//log.Printf("np: %s\n", data[p]);
 }
 action two_byte_utf8_sequence {
-    //log.Printf("2b %s\n", data[p-2:p]);
+	//log.Printf("2b %s\n", data[p-2:p]);
 }
 action three_byte_utf8_sequence {
-    //log.Printf("3b %s\n", data[p-3:p]);
+	//log.Printf("3b %s\n", data[p-3:p]);
 }
 action four_byte_utf8_sequence {
-    //log.Printf("4b %s\n", data[p-4:p]);
+	//log.Printf("4b %s\n", data[p-4:p]);
 }
 action two_byte_utf8_space {
-    //log.Printf("2bsp %s\n", data[p-2:p]);
+	//log.Printf("2bsp %s\n", data[p-2:p]);
 }
 action three_byte_utf8_space {
-    //log.Printf("3bsp %s\n", data[p-3:p]);
+	//log.Printf("3bsp %s\n", data[p-3:p]);
 }
 
 action replace_insecure_char 
 {
-    log.Printf("insecurepos %d", p)
-    data = arr_splice(data, []byte{0xef, 0xbf, 0xbd}, p)
-    // readjusting the pointers, as we just resized the data buffer
-    eof = len(data)
-    p += 2
-    pe = eof
+	log.Printf("insecurepos %d", p)
+	data = arr_splice(data, []byte{0xef, 0xbf, 0xbd}, p)
+	// readjusting the pointers, as we just resized the data buffer
+	eof = len(data)
+	p += 2
+	pe = eof
 }
 
 action mark {
-    log.Printf("mark(%d)", p)
-    mark = p
+	log.Printf("mark(%d)", p)
+	mark = p
 }
 action mark_end_of_paragraph {
-    log.Printf("mark_end_of_paragraph(%d)", p)
-    end_of_par = p
+	log.Printf("mark_end_of_paragraph(%d)", p)
+	end_of_par = p
 }
 action emit_add_line {
-    log.Printf("emit_add_line(%d)", p)
+	log.Printf("emit_add_line(%d)", p)
 }
 
 #action print_char {
-#    //log.Printf("pos:%d char: %s", p, string(data[p-1:p]))
+#	//log.Printf("pos:%d char: %s", p, string(data[p-1:p]))
 #}
 
 replacement = 0xef 0xbf 0xbd;

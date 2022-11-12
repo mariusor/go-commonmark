@@ -13,11 +13,11 @@ include thematic_breaks "thematic_breaks.rl";
 include headings "headings.rl";
 
 action emit_add_paragraph {
-    if end_of_par == 0 {
-        end_of_par = p
-    }
-    node = m.NewParagraph(data[mark:end_of_par])
-    log.Printf("par(%d): %s", end_of_par, node)
+	if end_of_par == 0 {
+		end_of_par = p
+	}
+	node = m.NewParagraph(data[mark:end_of_par])
+	log.Printf("par(%d): %s", end_of_par, node)
 }
 
 line = line_char+ eol;
