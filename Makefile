@@ -17,12 +17,12 @@ test: ragel
 lines:
 	wc -l $(RAGEL_OBJECT)
 
-coverage_markdown.out: TEST_TARGET := markdown
-coverage_markdown.out: TEST_FLAGS += -covermode=count -coverprofile=coverage_$(TEST_TARGET).out
+coverage_markdown.out: TEST_TARGET := ./src/markdown/...
+coverage_markdown.out: TEST_FLAGS += -covermode=count -coverprofile=coverage_markdown.out
 coverage_markdown.out: $(RAGEL_OBJECT) test
 
-coverage_parser.out: TEST_TARGET := parser
-coverage_parser.out: TEST_FLAGS += -covermode=count -coverprofile=coverage_$(TEST_TARGET).out
+coverage_parser.out: TEST_TARGET := ./src/parser/...
+coverage_parser.out: TEST_FLAGS += -covermode=count -coverprofile=coverage_parser.out
 coverage_parser.out: $(RAGEL_OBJECT) test
 
 .PHONY: ragel
