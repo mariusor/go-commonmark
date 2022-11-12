@@ -3,10 +3,11 @@ package parser
 import (
 	"io/ioutil"
 	"log"
-	m "markdown"
 	"os"
 	"reflect"
 	"testing"
+
+	m "github.com/mariusor/go-commonmark/src/markdown"
 )
 
 var stopOnFailure = false
@@ -272,6 +273,6 @@ func TestMain(m *testing.M) {
 	if f(os.Args, "quiet") {
 		log.SetOutput(ioutil.Discard)
 	}
-	log.SetFlags(log.LstdFlags | log.Lshortfile & 0)
+	log.SetFlags(log.LstdFlags | log.Lshortfile&0)
 	os.Exit(m.Run())
 }

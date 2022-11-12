@@ -3,12 +3,11 @@ TEST_FLAGS := -v
 TEST_TARGET := ./...
 BUILD := go build
 RUN := go run
-RAGEL_COMPILE := ragel -n -Z 
+RAGEL_COMPILE := ragel -n -Z
 RAGEL_STATE_MACHINE_TYPE := -G2
 RAGEL_DOT := ragel -n -V -p
 RAGEL_OBJECT := src/parser/parser_internal.go
 
-test: GOPATH = $(shell pwd)
 test: RAGEL_STATE_MACHINE_TYPE = -T0
 
 test: ragel

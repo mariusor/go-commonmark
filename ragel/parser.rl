@@ -11,7 +11,8 @@ import(
     "bytes"
     "errors"
     "log"
-    m "markdown"
+
+    m "github.com/mariusor/go-commonmark/src/markdown"
 )
 
 func arr_splice(dst []byte, src []byte, pos int) []byte {

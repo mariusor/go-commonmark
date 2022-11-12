@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	m "markdown"
 	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	m "github.com/mariusor/go-commonmark/src/markdown"
 )
 
 func loadFiles(ext string) ([]string, error) {
